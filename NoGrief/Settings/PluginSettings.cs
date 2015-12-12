@@ -151,14 +151,14 @@ namespace NoGriefPlugin
             _start = DateTime.Now;
 
             _adminProtectRadius = 10000;
-            _adminItems = new MTObservableCollection<AdminItem>();
+            _adminItems = new MTObservableCollection<AdminItem>( );
             _adminItems.CollectionChanged += ItemsCollectionChanged;
             _maxBlockCount = 100;
             _maxSubgridCount = 5;
             _protectionRadius = 5000;
             _protectionTime = 10;
 
-            
+
         }
 
 
@@ -177,7 +177,7 @@ namespace NoGriefPlugin
             {
                 lock ( this )
                 {
-                    String fileName = NoGrief.PluginPath + "Essential-Settings.xml";
+                    String fileName = NoGrief.PluginPath + "NoGrief-Settings.xml";
                     if ( File.Exists( fileName ) )
                     {
                         using ( StreamReader reader = new StreamReader( fileName ) )
@@ -213,7 +213,7 @@ namespace NoGriefPlugin
             {
                 lock ( this )
                 {
-                    String fileName = NoGrief.PluginPath + "Essential-Settings.xml";
+                    String fileName = NoGrief.PluginPath + "NoGrief-Settings.xml";
                     using ( StreamWriter writer = new StreamWriter( fileName ) )
                     {
                         XmlSerializer x = new XmlSerializer( typeof( PluginSettings ) );
