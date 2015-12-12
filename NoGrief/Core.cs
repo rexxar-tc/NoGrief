@@ -23,7 +23,6 @@ using SEModAPIInternal.API.Entity.Sector.SectorObject;
 using SEModAPIInternal.API.Entity.Sector.SectorObject.CubeGrid;
 using SEModAPIInternal.API.Entity.Sector.SectorObject.CubeGrid.CubeBlock;
 using SEModAPIInternal.API.Server;
-using SEModAPIInternal.Support;
 using NLog;
 using SEModAPI.API;
 
