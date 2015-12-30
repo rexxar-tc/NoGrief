@@ -1,10 +1,11 @@
-﻿using System;
+﻿namespace NoGriefPlugin.Settings
+{
+
+using System;
 using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Drawing.Design;
 
-namespace NoGriefPlugin.Settings
-{
     public class SettingsDialogItem : INotifyPropertyChanged
     {
         private bool enabled;

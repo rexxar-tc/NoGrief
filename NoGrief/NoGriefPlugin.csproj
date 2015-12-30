@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NoGrief</RootNamespace>
     <AssemblyName>NoGrief</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -24,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -33,6 +34,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
@@ -49,17 +51,25 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AssemblyFileVersion.tt</DependentUpon>
     </Compile>
-    <Compile Include="Core.cs" />
+    <Compile Include="ChatHandlers\ChatHandlerBase.cs" />
+    <Compile Include="NoGrief.cs" />
+    <Compile Include="ProcessHandlers\ExclusionZoneHandler.cs" />
+    <Compile Include="Utility\DamageHandler.cs" />
+    <Compile Include="ProcessHandlers\ProcessHandlerBase.cs" />
     <Compile Include="Settings\PluginSettings.cs" />
-    <Compile Include="Settings\SettingsAdminItem.cs" />
+    <Compile Include="Settings\SettingsExclusionItem.cs" />
     <Compile Include="UtilityClasses\MTObservableCollection.cs" />
     <Compile Include="UtilityClasses\OrientedBoundingBox.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UtilityClasses\SerializeableDictionary.cs" />
     <Compile Include="Settings\SettingsDialogItem.cs" />
     <Compile Include="UtilityClasses\UIEditors.cs" />
+    <Compile Include="Utility\MathUtility.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="Essentials">
+      <HintPath>..\..\EssentialsPlugin\EssentialsPlugin\bin\x64\Debug\Essentials.dll</HintPath>
+    </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\SEServerExtender\SEServerExtender\bin\x64\Release\NLog.dll</HintPath>
@@ -68,6 +78,10 @@
       <HintPath>..\Libraries\Sandbox.Common.dll</HintPath>
     </Reference>
     <Reference Include="Sandbox.Game, Version=0.1.5795.28250, Culture=neutral, processorArchitecture=AMD64" />
+    <Reference Include="SEComm, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\SEServerExtender\SEServerExtender\bin\x64\Debug\SEComm.dll</HintPath>
+    </Reference>
     <Reference Include="SEModAPI">
       <HintPath>..\Libraries\SEModAPI.dll</HintPath>
     </Reference>
@@ -82,8 +96,9 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.XML" />
-    <Reference Include="VRage.Common">
-      <HintPath>..\Libraries\VRage.Common.dll</HintPath>
+    <Reference Include="VRage, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\SEServerExtender\SEServerExtender\bin\x64\Debug\VRage.dll</HintPath>
     </Reference>
     <Reference Include="VRage.Game, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -104,6 +119,7 @@
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>set textTemplatingPath="%25CommonProgramFiles(x86)%25\Microsoft Shared\TextTemplating\$(VisualStudioVersion)\texttransform.exe"
