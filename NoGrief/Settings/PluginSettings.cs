@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.IO;
-using System.Xml.Serialization;
-using NoGrief.Settings;
-using NoGriefPlugin.Settings;
-using NoGriefPlugin.UtilityClasses;
-
-namespace NoGriefPlugin
+﻿namespace NoGriefPlugin
 {
+    using System;
+    using System.Collections.Specialized;
+    using System.ComponentModel;
+    using System.IO;
+    using System.Xml.Serialization;
+    using NoGriefPlugin.Settings;
+    using NoGriefPlugin.UtilityClasses;
+
     [Serializable]
     public class PluginSettings
     {
@@ -18,9 +17,8 @@ namespace NoGriefPlugin
         private int _maxSubgridCount;
         private int _protectionTime;
         private int _protectionRadius;
-        private MTObservableCollection<AdminItem> _adminItems;
-        private int _adminProtectRadius;
-        private SettingsDialogItem _adminWarningItem;
+        private MTObservableCollection<ExclusionItem> _exclusionItems;
+        private bool _exclusionEnabled;
 
 
         private static PluginSettings _instance;
@@ -101,41 +99,28 @@ namespace NoGriefPlugin
             }
         }
 
-        public MTObservableCollection<AdminItem> AdminItems
+        public MTObservableCollection<ExclusionItem> ExclusionItems
         {
             get
             {
-                return _adminItems;
+                return _exclusionItems;
             }
             set
             {
-                _adminItems = value;
+                _exclusionItems = value;
                 Save( );
             }
         }
 
-        public int AdminProtectRadius
+        public bool ExclusionEnabled
         {
             get
             {
-                return _adminProtectRadius;
+                return _exclusionEnabled;
             }
             set
             {
-                _adminProtectRadius = value;
-                Save( );
-            }
-        }
-
-        public SettingsDialogItem AdminWarningItem
-        {
-            get
-            {
-                return _adminWarningItem;
-            }
-            set
-            {
-                _adminWarningItem = value;
+                _exclusionEnabled = value;
                 Save( );
             }
         }
@@ -150,9 +135,9 @@ namespace NoGriefPlugin
             // Default is 12 hours
             _start = DateTime.Now;
 
-            _adminProtectRadius = 10000;
-            _adminItems = new MTObservableCollection<AdminItem>( );
-            _adminItems.CollectionChanged += ItemsCollectionChanged;
+            _exclusionEnabled = false;
+            _exclusionItems = new MTObservableCollection<ExclusionItem>( );
+            _exclusionItems.CollectionChanged += ItemsCollectionChanged;
             _maxBlockCount = 100;
             _maxSubgridCount = 5;
             _protectionRadius = 5000;
