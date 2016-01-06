@@ -19,7 +19,8 @@
         private int _protectionRadius;
         private MTObservableCollection<ExclusionItem> _exclusionItems;
         private bool _exclusionEnabled;
-
+        private bool _exclusionLogging;
+        private string _serverChatName;
 
         private static PluginSettings _instance;
         private static bool _loading = false;
@@ -46,6 +47,19 @@
         #endregion
 
         #region Properties
+
+        public string ServerChatName
+        {
+            get
+            {
+                return _serverChatName;
+            }
+            set
+            {
+                _serverChatName = value;
+                Save( );
+            }
+        }
 
         public int MaxBlockCount
         {
@@ -125,6 +139,19 @@
             }
         }
 
+        public bool ExclusionLogging
+        {
+            get
+            {
+                return _exclusionLogging;
+            }
+            set
+            {
+                _exclusionLogging = value;
+                Save( );
+            }
+        }
+
         #endregion
 
 
@@ -136,13 +163,14 @@
             _start = DateTime.Now;
 
             _exclusionEnabled = false;
+            _exclusionLogging = false;
             _exclusionItems = new MTObservableCollection<ExclusionItem>( );
             _exclusionItems.CollectionChanged += ItemsCollectionChanged;
             _maxBlockCount = 100;
             _maxSubgridCount = 5;
             _protectionRadius = 5000;
             _protectionTime = 10;
-
+            _serverChatName = "Server";
 
         }
 

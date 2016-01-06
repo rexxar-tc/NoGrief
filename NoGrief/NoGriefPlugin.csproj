@@ -53,7 +53,8 @@
     </Compile>
     <Compile Include="ChatHandlers\ChatHandlerBase.cs" />
     <Compile Include="NoGrief.cs" />
-    <Compile Include="ProcessHandlers\ExclusionZoneHandler.cs" />
+    <Compile Include="ProcessHandlers\ProcessExclusionZone.cs" />
+    <Compile Include="Utility\Communication.cs" />
     <Compile Include="Utility\DamageHandler.cs" />
     <Compile Include="ProcessHandlers\ProcessHandlerBase.cs" />
     <Compile Include="Settings\PluginSettings.cs" />
@@ -67,9 +68,6 @@
     <Compile Include="Utility\MathUtility.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Essentials">
-      <HintPath>..\..\EssentialsPlugin\EssentialsPlugin\bin\x64\Debug\Essentials.dll</HintPath>
-    </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\SEServerExtender\SEServerExtender\bin\x64\Release\NLog.dll</HintPath>
