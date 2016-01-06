@@ -4,6 +4,7 @@
     using System.Linq;
     using NLog;
     using SEModAPIInternal.API.Common;
+    using NoGriefPlugin.Utility;
 
     public abstract class ChatHandlerBase
     {
@@ -54,7 +55,7 @@
 
         public abstract string GetHelp( );
 
-        public abstract string GetHelpDialog( );
+        public abstract Communication.ServerDialogItem GetHelpDialog( );
 
         public virtual String GetCommandText( )
         {

@@ -42,7 +42,7 @@
     using System.Runtime.InteropServices;
     using SEModAPI.API.Utility;
     using VRage.ModAPI;
-    using EssentialsPlugin.Utility;
+    using Utility;
     public class NoGrief : IPlugin, IChatEventHandler, IPlayerEventHandler
     {
 
@@ -72,6 +72,22 @@
             set
             {
                 _pluginPath = value;
+            }
+        }
+
+        [Category( "Chat Settings" )]
+        [Description( "Chat messages sent from the server will show this name. \r\nNote: This is set separately from SESE and Essentials." )]
+        [Browsable( true )]
+        [ReadOnly( false )]
+        public string ServerChatName
+        {
+            get
+            {
+                return PluginSettings.Instance.ServerChatName;
+            }
+            set
+            {
+                PluginSettings.Instance.ServerChatName = value;
             }
         }
 
@@ -107,6 +123,23 @@
             }
         }
 
+        [Category( "Exclusion Zones" )]
+        [Description( "Turn logging on or off" )]
+        [Browsable( true )]
+        [ReadOnly( false )]
+        public bool ExclusionLogging
+        {
+            get
+            {
+                return PluginSettings.Instance.ExclusionLogging;
+            }
+            set
+            {
+                PluginSettings.Instance.ExclusionLogging = value;
+            }
+        }
+
+        /*
         [Category( "Player Protection" )]
         [Description( "Amount of time, in minutes, after a player logs off before their station is protected" )]
         [Browsable( true )]
@@ -170,7 +203,7 @@
                 PluginSettings.Instance.ProtectionRadius = value;
             }
         }
-
+        */
         #endregion
 
         #region "Methods"
@@ -213,7 +246,7 @@
             // Setup process handlers
             _processHandlers = new List<ProcessHandlerBase>
             {
-
+                new ProcessExclusionZone( )
             };
 
             // Setup chat handlers
@@ -539,7 +572,7 @@
                 commandList = commandList.Replace( ", ", "|" );
                 //take our list of commands, put line breaks between all the entries and stuff it into a dialog winow
 
-                Communication.SendClientMessage( remoteUserId, string.Format( "/dialog \"Help\" \"Available commands\" \"\" \"{0}||Type '/help dialog <command>' for more info.\" \"close\"", commandList ) );
+                Communication.DisplayDialog( remoteUserId, "Help", "Available commands", commandList + "||Type '/help dialog <command>' for more info.", "close" );
             }
             else
             {
@@ -552,7 +585,7 @@
                     {
                         if ( String.Equals( handler.GetCommandText( ), helpTarget, StringComparison.CurrentCultureIgnoreCase ) )
                         {
-                            Communication.SendClientMessage( remoteUserId, handler.GetHelpDialog( ) );
+                            Communication.DisplayDialog( remoteUserId, handler.GetHelpDialog( ) );
                             found = true;
                         }
                     }
@@ -562,7 +595,7 @@
                         {
                             if ( String.Equals( cmd, helpTarget, StringComparison.CurrentCultureIgnoreCase ) )
                             {
-                                Communication.SendClientMessage( remoteUserId, handler.GetHelpDialog( ) );
+                                Communication.DisplayDialog( remoteUserId, handler.GetHelpDialog( ) );
                                 found = true;
                             }
                         }
