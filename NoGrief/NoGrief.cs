@@ -57,7 +57,6 @@
         private List<ProcessHandlerBase> _processHandlers;
         private List<ChatHandlerBase> _chatHandlers;
         private bool _running = true;
-        private DateTime m_lastProcessUpdate;
 
         #endregion
 
@@ -354,12 +353,20 @@
         #region IPlugin Members
         public void Init( )
         {
+            //register object builder assembly
+            string path = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "SpaceEngineers.ObjectBuilders.DLL" );
+            VRage.Plugins.MyPlugins.RegisterGameObjectBuildersAssemblyFile( path );
+
             Log.Debug( "Initializing NoGrief plugin at path {0}\\", Path.GetDirectoryName( Assembly.GetExecutingAssembly( ).Location ) );
             DoInit( Path.GetDirectoryName( Assembly.GetExecutingAssembly( ).Location ) + "\\" );
         }
 
         public void InitWithPath( String modPath )
         {
+            //register object builder assembly
+            string path = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "SpaceEngineers.ObjectBuilders.DLL" );
+            VRage.Plugins.MyPlugins.RegisterGameObjectBuildersAssemblyFile( path );
+
             Log.Debug( "Initializing NoGrief plugin at path {0}\\", Path.GetDirectoryName( modPath ) );
             DoInit( Path.GetDirectoryName( modPath ) + "\\" );
         }

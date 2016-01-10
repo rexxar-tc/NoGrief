@@ -103,6 +103,183 @@
             Warning this will do allocations, use only in editor!
             </summary>
         </member>
+        <member name="T:VRage.Animations.MyAnimationController">
+            <summary>
+            Animation controller contains and drives skeletal animations.
+            It also serves as an abstraction layer, hiding low/level classes.
+            </summary>
+        </member>
+        <member name="T:VRage.Animations.MyAnimationStateMachine">
+            <summary>
+            Animation state machine selects the animation to match current state.
+            When it finds valid transition to some next state, transition is performed automatically.
+            </summary>
+        </member>
+        <member name="T:VRage.Generics.MyStateMachine">
+            <summary>
+            Implementation of generic state machine. Inherit from this class to create your own state machine.
+            Transitions are performed automatically on each update (if conditions of transition are fulfilled).
+            </summary>
+        </member>
+        <member name="T:VRage.Animations.MyAnimationStateMachineNode">
+            <summary>
+            Animation state machine node is a representation of one state inside MyAnimationStateMachine.
+            </summary>
+        </member>
+        <member name="T:VRage.Generics.MyStateMachineNode">
+            <summary>
+            Node of the state machine.
+            </summary>
+        </member>
+        <member name="T:VRage.Animations.MyAnimationStateMachineTransition">
+            <summary>
+            Description of transition to another state (MyAnimationStateMachineNode) in the state machine (MyAnimationStateMachine).
+            </summary>
+        </member>
+        <member name="T:VRage.Generics.MyStateMachineTransition">
+            <summary>
+            Definition of transition to some node.
+            </summary>
+        </member>
+        <member name="T:VRage.Animations.MyAnimationTreeNode">
+            <summary>
+            Interface representing one node in animation tree.
+            </summary>
+        </member>
+        <member name="T:VRage.Animations.MyAnimationUpdateData">
+            <summary>
+            Helper structure passed as an parameter during computation of current pose.
+            </summary>
+        </member>
+        <member name="T:VRage.Animations.MyAnimationVariableStorage">
+            <summary>
+            Key-value storage of float values, other types are implicitly converted.
+            </summary>
+        </member>
+        <member name="T:VRage.Generics.IMyVariableStorage`1">
+            <summary>
+            Interface of variable storage (key-value principle).
+            </summary>
+        </member>
+        <member name="T:VRage.Animations.MyCharacterBone">
+            <summary>
+            Bones in this model are represented by this class, which
+            allows a bone to have more detail associatd with it.
+            
+            This class allows you to manipulate the local coordinate system
+            for objects by changing the scaling, translation, and rotation.
+            These are indepenent of the bind transformation originally supplied
+            for the model. So, the actual transformation for a bone is
+            the product of the:
+            
+            Scaling
+            Bind scaling (scaling removed from the bind transform)
+            Rotation
+            Translation
+            Bind Transformation
+            Parent Absolute Transformation
+            
+            </summary>
+        </member>
+        <member name="F:VRage.Animations.MyCharacterBone.m_parent">
+            <summary>
+            Any parent for this bone
+            </summary>
+        </member>
+        <member name="F:VRage.Animations.MyCharacterBone.m_bindTransform">
+            <summary>
+            The bind transform is the transform for this bone
+            as loaded from the original model. It's the base pose.
+            I do remove any scaling, though.
+            </summary>
+        </member>
+        <member name="F:VRage.Animations.MyCharacterBone.m_translation">
+            <summary>
+            Any translation applied to the bone
+            </summary>
+        </member>
+        <member name="F:VRage.Animations.MyCharacterBone.m_rotation">
+            <summary>
+            Any rotation applied to the bone
+            </summary>
+        </member>
+        <member name="F:VRage.Animations.MyCharacterBone.m_transform">
+            <summary>
+            computed bone transform
+            </summary>
+        </member>
+        <member name="F:VRage.Animations.MyCharacterBone.m_changed">
+            <summary>
+            indicates whether bone needs recalculation
+            </summary>
+        </member>
+        <member name="F:VRage.Animations.MyCharacterBone.m_hierarchyUpdate">
+            <summary>
+            indicates whether hierarchy of bones is updating
+            </summary>
+        </member>
+        <member name="F:VRage.Animations.MyCharacterBone.Name">
+            <summary>
+            The bone name
+            </summary>
+        </member>
+        <member name="F:VRage.Animations.MyCharacterBone.AbsoluteTransform">
+            <summary>
+            The bone absolute transform
+            </summary>
+        </member>
+        <member name="M:VRage.Animations.MyCharacterBone.#ctor(System.String,VRageMath.Matrix,VRage.Animations.MyCharacterBone)">
+            <summary>
+            Constructor for a bone object
+            </summary>
+            <param name="name">The name of the bone</param>
+            <param name="bindTransform">The initial bind transform for the bone</param>
+            <param name="parent">A parent for this bone</param>
+        </member>
+        <member name="M:VRage.Animations.MyCharacterBone.ComputeAbsoluteTransform">
+            <summary>
+            Compute the absolute transformation for this bone.
+            </summary>
+        </member>
+        <member name="M:VRage.Animations.MyCharacterBone.SetCompleteTransform(VRageMath.Vector3@,VRageMath.Quaternion@,System.Single)">
+            <summary>
+            This sets the rotation and translation such that the
+            rotation times the translation times the bind after set
+            equals this matrix. This is used to set animation values.
+            </summary>
+            <param name="m">A matrix include translation and rotation</param>
+        </member>
+        <member name="M:VRage.Animations.MyCharacterBone.GetAbsoluteRigTransform">
+            <summary>
+            Returns bone's rig absolute transform - including transforms of all parent bones
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:VRage.Animations.MyCharacterBone.BindTransform">
+            <summary>
+            The bone bind transform
+            </summary>
+        </member>
+        <member name="P:VRage.Animations.MyCharacterBone.SkinTransform">
+            <summary>
+            Inverse of absolute bind transform for skinnning
+            </summary>
+        </member>
+        <member name="P:VRage.Animations.MyCharacterBone.Rotation">
+            <summary>
+            Bone rotation
+            </summary>
+        </member>
+        <member name="P:VRage.Animations.MyCharacterBone.Translation">
+            <summary>
+            Any translations
+            </summary>
+        </member>
+        <member name="P:VRage.Animations.MyCharacterBone.Parent">
+            <summary>
+            The parent bone or null for the root bone
+            </summary>
+        </member>
         <member name="M:VRage.Audio.IMyAudio.ApplyEffect(VRage.Audio.IMySourceVoice,VRage.Utils.MyStringHash,VRage.Audio.MyCueId[],System.Nullable{System.Single})">
             <summary>
             Creates effect on input emitter
@@ -150,6 +327,16 @@
         <member name="T:VRage.WoodFractureSettings.Rotation">
             How to rotate the splitting geometry
         </member>
+        <member name="T:VRage.Generics.IMyCondition">
+            <summary>
+            Interface of totally generic condition.
+            </summary>
+        </member>
+        <member name="M:VRage.Generics.IMyCondition.Evaluate">
+            <summary>
+            Evaluate the condition, it can be true/false.
+            </summary>
+        </member>
         <member name="T:VRage.Generics.MyCachingDynamicObjectsPool`2">
             This class provides similar functionality to MyDynamicObjectsPool with the addition of caching facilities.
             
@@ -170,6 +357,16 @@
             Allocate an object that may be cached.
             
             Returns true if the object was found in the cache and false otherwise.
+        </member>
+        <member name="T:VRage.Generics.StateMachine.MyCondition`1">
+            <summary>
+            Implementation of generic condition.
+            </summary>
+        </member>
+        <member name="T:VRage.Generics.MyStateMachineTransitionWithStart">
+            <summary>
+            Pair holding transition and its starting node.
+            </summary>
         </member>
         <member name="M:VRage.Import.ModelAutoRebuild.IsModelActual(System.String,System.String,System.String,System.String)">
             <summary>
@@ -433,12 +630,12 @@
             It's so called Value-Gradient noise.
             </summary>
         </member>
-        <member name="P:VRageRender.IMyRenderMessage.MessageClass">
+        <member name="P:VRageRender.MyRenderMessageBase.MessageClass">
             <summary>
             Get message class
             </summary>
         </member>
-        <member name="P:VRageRender.IMyRenderMessage.MessageType">
+        <member name="P:VRageRender.MyRenderMessageBase.MessageType">
             <summary>
             Gets message type
             </summary>
@@ -1048,6 +1245,11 @@
             No culling of back faces
             </summary>
         </member>
+        <member name="F:VRageRender.RenderFlags.OffsetInVertexShader">
+            <summary>
+            Offset the vertices a little bit in the vertex shader to fix Z-fighting
+            </summary>
+        </member>
         <member name="T:VRageRender.LightTypeEnum">
             <summary>
             Light type, flags, could be combined
@@ -1249,6 +1451,16 @@
             Rotate 180 degress around both the X and Y axis before rendering.
             </summary>
         </member>
+        <member name="T:VRage.Network.BlockingAttribute">
+            <summary>
+            Indicates that event will be blocking all other events.
+            </summary>
+        </member>
+        <member name="M:VRage.Network.BlockingAttribute.#ctor">
+            <summary>
+            Creates attribute that indicates that event will be blocking all other events until this is resolved.
+            </summary>
+        </member>
         <member name="T:VRage.Network.BroadcastExceptAttribute">
             <summary>
             Client method. Decorated method is be called by server on all clients (except the one who invoked it on server or the one specified in RaiseEvent...when called from server).
@@ -1389,6 +1601,12 @@
             Loading done handler can be called synchronously or asynchronously (but always from Update thread).
             </summary>
         </member>
+        <member name="M:VRage.Network.IMyReplicable.OnLoadBegin(VRage.Library.Collections.BitStream,System.Action{System.Boolean})">
+            <summary>
+            Client deserializes object and adds it to proper collection (e.g. MyEntities).
+            Loading done handler can be called synchronously or asynchronously (but always from Update thread).
+            </summary>
+        </member>
         <member name="M:VRage.Network.IMyReplicable.OnDestroy">
             <summary>
             Called on client when server destroyed this replicable.
@@ -1458,6 +1676,106 @@
             <param name="forClient">The client.</param>
             <param name="packetId">Id of the delivered or lost packet.</param>
             <param name="delivered">True when packet was delivered, false when packet is considered lost.</param>
+        </member>
+        <member name="M:VRage.Replication.MyEventsBuffer.EnqueueEvent(VRage.Library.Collections.BitStream,VRage.Network.NetworkId,VRage.Network.NetworkId,System.UInt32,VRage.Network.EndpointId)">
+            <summary>
+            Enqueues event that have to be done on target object.
+            </summary>
+            <param name="stream">Stream with event data.</param>
+            <param name="targetObjectId">Object id that is a target of the event.</param>
+            <param name="blockingObjectId">Object id that is blocking target to be processed. 'NetworkId.Invalid' if none.</param>
+            <param name="eventId">Event id.</param>
+            <param name="sender">Endpoint.</param>
+        </member>
+        <member name="M:VRage.Replication.MyEventsBuffer.EnqueueBarrier(VRage.Network.NetworkId,VRage.Network.NetworkId)">
+            <summary>
+            Enqueues barrier for an entity that is targeting network object with blocking event. WARNING: Have to be in
+            pair with blocking event!
+            </summary>
+            <param name="targetObjectId">Network object id that will get barrier event.</param>
+            <param name="blockingObjectId">Network object that have blocking event.</param>
+        </member>
+        <member name="M:VRage.Replication.MyEventsBuffer.RemoveEvents(VRage.Network.NetworkId)">
+            <summary>
+            Removes all events from target id.
+            </summary>
+            <param name="objectInstance">Target object network id.</param>
+        </member>
+        <member name="M:VRage.Replication.MyEventsBuffer.TryLiftBarrier(VRage.Network.NetworkId)">
+            <summary>
+            Tries to lift barrier from target network object. If successfull, removes this barrier from
+            target object events queue. Also barrier must be aiming target object id.
+            </summary>
+            <param name="targetObjectId">Target network object id.</param>
+            <returns>True if barrier found on the top of target object events queue. Otherwise false.</returns>
+        </member>
+        <member name="M:VRage.Replication.MyEventsBuffer.ProcessEvents(VRage.Network.NetworkId,VRage.Replication.MyEventsBuffer.Handler,VRage.Replication.MyEventsBuffer.IsBlockedHandler,VRage.Network.NetworkId)">
+            <summary>
+            Tries to process events for prarticular object id (network id).
+            </summary>
+            <param name="targetObjectId">Target object network id.</param>
+            <param name="eventHandler">Handler for processing events.</param>
+            <param name="isBlockedHandler">Handler for checking if processing of events should be canceled.</param>
+            <param name="caller">Parent Network id from which this is called. Set NetworkId.Invalid if no parent.</param>
+            <returns>True if all sucessfull.</returns>
+        </member>
+        <member name="M:VRage.Replication.MyEventsBuffer.ProcessBarrierEvent(VRage.Network.NetworkId,VRage.Replication.MyEventsBuffer.MyBufferedEvent,VRage.Replication.MyEventsBuffer.Handler,VRage.Replication.MyEventsBuffer.IsBlockedHandler)">
+            <summary>
+            Process barrier event.
+            </summary>
+            <param name="targetObjectId">Target of the barrier event.</param>
+            <param name="eventToProcess">Event to process.</param>
+            <param name="eventHandler">Handler for processing event.</param>
+            <param name="isBlockedHandler">Handler for checking if processing of events should be canceled.</param>
+            <returns>True if success.</returns>
+        </member>
+        <member name="M:VRage.Replication.MyEventsBuffer.ProcessBlockingEvent(VRage.Network.NetworkId,VRage.Replication.MyEventsBuffer.MyBufferedEvent,VRage.Network.NetworkId,VRage.Replication.MyEventsBuffer.Handler,VRage.Replication.MyEventsBuffer.IsBlockedHandler,System.Collections.Generic.Queue{VRage.Network.NetworkId}@)">
+            <summary>
+            Process blocking event.
+            </summary>
+            <param name="targetObjectId">Target object id for which to process.</param>
+            <param name="eventToProcess">Event to be processed.</param>
+            <param name="caller">Parent Network id from which this is called. Set NetworkId.Invalid if no parent.</param>
+            <param name="eventHandler">Handler for processing event.</param>
+            <param name="isBlockedHandler">Handler for checking if processing of events should be canceled.</param>
+            <param name="postProcessQueue">Queue that should be post processed.</param>
+            <returns>True if was success.</returns>
+        </member>
+        <member name="M:VRage.Replication.MyEventsBuffer.GetEventsBufferStat">
+            <summary>
+            Gets events buffer statistics.
+            </summary>
+            <returns>Formatted events buffer statistics.</returns>
+        </member>
+        <member name="F:VRage.Replication.MyEventsBuffer.MyBufferedEvent.Stream">
+            <summary>
+            Stream with the event
+            </summary>
+        </member>
+        <member name="F:VRage.Replication.MyEventsBuffer.MyBufferedEvent.TargetObjectId">
+            <summary>
+            Target object net id of the event.
+            </summary>
+        </member>
+        <member name="F:VRage.Replication.MyEventsBuffer.MyBufferedEvent.BlockingObjectId">
+            <summary>
+            Object network id that is blocking this event. If 'NetworkId.Invalid' than no blocking object.
+            </summary>
+        </member>
+        <member name="F:VRage.Replication.MyEventsBuffer.MyBufferedEvent.IsBarrier">
+            <summary>
+            Indicates if this event is a barrier.
+            </summary>
+        </member>
+        <member name="F:VRage.Replication.MyEventsBuffer.MyObjectEventsBuffer.Events">
+            <summary>
+            Events to be processed for network object.
+            </summary>
+        </member>
+        <member name="F:VRage.Replication.MyEventsBuffer.MyObjectEventsBuffer.IsProcessing">
+            <summary>
+            Indicates if events are currently processed.
+            </summary>
         </member>
         <member name="M:VRage.Network.MyReplicationLayerBase.InvokeLocally``7(VRage.Network.CallSite{``0,``1,``2,``3,``4,``5,``6},``0,``1,``2,``3,``4,``5,``6)">
             <summary>
@@ -1539,6 +1857,12 @@
             Add network object with fixed ID.
             </summary>
         </member>
+        <member name="M:VRage.Network.MyReplicationLayer.GetMultiplayerStat">
+            <summary>
+            Returns string with current multiplayer status. Use only for debugging.
+            </summary>
+            <returns>Already formatted string with current multiplayer status.</returns>
+        </member>
         <member name="M:VRage.Network.MyReplicationLayer.DispatchEvent(VRage.Library.Collections.BitStream,VRage.Network.CallSite,VRage.Network.EndpointId,VRage.Network.IMyNetObject,System.Single)">
             <summary>
             Called when event is raised locally to send it to other peer(s).
@@ -1565,6 +1889,14 @@
             <summary>
             Marks replicable as successfully created, ready to receive events and state groups data.
             </summary>
+        </member>
+        <member name="M:VRage.Network.MyReplicationClient.IsBlocked(VRage.Network.NetworkId,VRage.Network.NetworkId)">
+            <summary>
+            Checks if network id is blocked by other network id.
+            </summary>
+            <param name="networkId">Target network id.</param>
+            <param name="blockedNetId">Blocking network id.</param>
+            <returns></returns>
         </member>
         <member name="M:VRage.Network.MyReplicationClient.ProcessStateSync(VRage.MyPacket)">
             <summary>
