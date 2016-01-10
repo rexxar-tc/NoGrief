@@ -15,6 +15,14 @@
             Example: MyDestructionData component returns true only when game uses Havok Destruction
             </summary>
         </member>
+        <member name="M:Sandbox.ModAPI.IMyCamera.WorldToScreen(VRageMath.Vector3D@)">
+            <summary>
+            Gets screen coordinates of 3d world pos in 0 - 1 distance where 1.0 is screen width(for X) or height(for Y).
+            WARNING: Y is from bottom to top.
+            </summary>
+            <param name="worldPos">World position.</param>
+            <returns>Screen coordinate in 0-1 distance.</returns>
+        </member>
         <member name="T:Sandbox.ModAPI.BeforeDamageApplied">
             <summary>
             This delegate is used to handle damage before it's applied to an object.  This returns a modified damage that is used in DoDamage.  Return damage if no change.
@@ -1180,6 +1188,36 @@
         <member name="P:Sandbox.ModAPI.Ingame.IMyLargeTurretBase.AIEnabled">
             <summary>
             Checks is AI is enabled for turret
+            </summary>
+        </member>
+        <member name="P:Sandbox.ModAPI.Ingame.IMyMedicalRoom.RespawnAllowed">
+            <summary>
+            Disable to remove respawn component from medical room.
+            </summary>
+        </member>
+        <member name="P:Sandbox.ModAPI.Ingame.IMyMedicalRoom.HealingAllowed">
+            <summary>
+            Disabling prevents healing characters.
+            </summary>
+        </member>
+        <member name="P:Sandbox.ModAPI.Ingame.IMyMedicalRoom.RefuelAllowed">
+            <summary>
+            Disabling prevents refueling suits.
+            </summary>
+        </member>
+        <member name="P:Sandbox.ModAPI.Ingame.IMyMedicalRoom.SuitChangeAllowed">
+            <summary>
+            Disable to prevent players from changing their suits.
+            </summary>
+        </member>
+        <member name="P:Sandbox.ModAPI.Ingame.IMyMedicalRoom.CustomWardrobesEnabled">
+            <summary>
+            If set to true CustomWardrobeNames are used instead of all definitions when instantiating WardrobeScreen.
+            </summary>
+        </member>
+        <member name="P:Sandbox.ModAPI.Ingame.IMyMedicalRoom.CustomWardrobeNames">
+            <summary>
+            Used when CustomWardrobes are enabled.
             </summary>
         </member>
         <member name="P:Sandbox.ModAPI.Ingame.IMyMotorSuspension.SteerAngle">

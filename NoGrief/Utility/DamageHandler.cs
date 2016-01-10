@@ -9,7 +9,7 @@
     public class DamageHandler
     {
         private static bool _init = false;
-        private static DateTime _lastLog;
+        //private static DateTime _lastLog;
 
         public static void Init( )
         {

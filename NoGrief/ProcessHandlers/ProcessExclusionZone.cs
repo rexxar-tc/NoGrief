@@ -44,8 +44,7 @@
                     {
                         if ( item.AllowedEntities.Count < 1 )
                             InitItem( item );
-
-                        bool updateWarn = false;
+                        
                         HashSet<long> ItemWarnList;
                         if ( !WarnList.TryGetValue( item.EntityId, out ItemWarnList ) )
                         {
@@ -84,7 +83,6 @@
                             {
                                 //entity no longer exists, remove it from the list
                                 ItemWarnList.Remove( warnId );
-                                updateWarn = true;
                                 continue;
                             }
 
@@ -94,23 +92,19 @@
                             {
                                 //entity has left the exclusion zone
                                 ItemWarnList.Remove( warnId );
-                                updateWarn = true;
                                 if ( warnEntity is IMyCharacter )
                                 {
                                     if ( PluginSettings.Instance.ExclusionLogging )
                                         NoGrief.Log.Debug( "Player left exclusion zone" );
                                     MyCharacter player = (MyCharacter)warnEntity;
-                                    ulong steamID = PlayerMap.Instance.GetSteamIdFromPlayerName( player.DisplayName );
+                                    ulong steamID = PlayerMap.Instance.GetSteamId( warnId );
                                     Communication.Notification( steamID, MyFontEnum.Green, 3, "Left exclusion zone" );
                                 }
                                 else if ( warnEntity is IMyCubeGrid )
                                 {
-                                    //I'll do this later
-
                                     if ( PluginSettings.Instance.ExclusionLogging )
                                         NoGrief.Log.Debug( "Ship left exclusion zone" );
                                     ItemWarnList.Remove( warnId );
-                                    updateWarn = true;
                                 }
                             }
                             if ( protectEntities.Contains( warnEntity ) )
@@ -121,9 +115,8 @@
                                     if ( PluginSettings.Instance.ExclusionLogging )
                                         NoGrief.Log.Debug( "Found player in protection zone" );
                                     MyCharacter player = (MyCharacter)warnEntity;
-                                    updateWarn = true;
                                     ItemWarnList.Remove( warnId );
-                                    ulong steamID = PlayerMap.Instance.GetSteamIdFromPlayerName( player.DisplayName );
+                                    ulong steamID = PlayerMap.Instance.GetSteamId( warnId );
                                     if ( player.IsUsing is IMyCubeBlock )
                                     {
                                         //player is in a ship, they'll get moved along with it, simply notify them here
@@ -142,6 +135,12 @@
                                         NoGrief.Log.Debug( "Moving player" );
                                     Communication.MoveMessage( steamID, "normal", (Vector3D)tryMove );
                                     Communication.Notification( steamID, MyFontEnum.Red, 3, "You have been removed from the protection zone." );
+                                    //stop the object
+                                    SandboxGameAssemblyWrapper.Instance.GameAction( ( ) =>
+                                    {
+                                        warnEntity.Physics.LinearVelocity = Vector3D.Zero;
+                                        warnEntity.Physics.AngularVelocity = Vector3D.Zero;
+                                    } );
                                 }
 
                                 if ( warnEntity is IMyMissileGunObject )
@@ -153,14 +152,11 @@
                                         //this replication shouldn't be necessary, but let's force a sync just to be safe.
                                     } );
                                     ItemWarnList.Remove( warnId );
-                                    updateWarn = true;
                                     continue;
                                 }
 
-
                                 if ( warnEntity is IMyCubeGrid )
                                 {
-                                    updateWarn = true;
                                     ItemWarnList.Remove( warnId );
                                     Vector3D? tryMove = MathUtility.TraceVector( warnEntity.GetPosition( ), warnEntity.Physics.LinearVelocity, -100 );
                                     if ( tryMove == null )
@@ -168,6 +164,12 @@
                                         //do something
                                     }
                                     Communication.MoveMessage( 0, "normal", (Vector3D)tryMove, warnEntity.GetTopMostParent( ).EntityId );
+                                    //stop the object
+                                    SandboxGameAssemblyWrapper.Instance.GameAction( ( ) =>
+                                    {
+                                        warnEntity.Physics.LinearVelocity = Vector3D.Zero;
+                                        warnEntity.Physics.AngularVelocity = Vector3D.Zero;
+                                    } );
                                     continue;
                                 }
 
@@ -180,15 +182,21 @@
                                         //this replication shouldn't be necessary, but let's force a sync just to be safe.
                                     } );
                                     ItemWarnList.Remove( warnId );
-                                    updateWarn = true;
                                     continue;
                                 }
                             }
                         }
 
                         if ( excludedEntities.Count == protectEntities.Count )
+                        {
+                            //nothing to do
+                            protectEntities.Clear( );
+                            excludedEntities.Clear( );
+                            WarnList.Remove( item.EntityId );
+                            WarnList.Add( item.EntityId, ItemWarnList );
                             continue;
-                        
+                        }
+
 
                         foreach ( IMyEntity entity in excludedEntities )
                         {
@@ -224,7 +232,7 @@
                                         if ( cockpit.Pilot == null )
                                             continue;
 
-                                        ulong steamId = PlayerMap.Instance.GetSteamIdFromPlayerName( cockpit.Pilot.DisplayName );
+                                        ulong steamId = PlayerMap.Instance.GetSteamId( cockpit.Pilot.EntityId );
                                         if ( !playersOnboard.Contains( steamId ) )
                                             playersOnboard.Add( steamId );
 
@@ -233,24 +241,6 @@
                                     }
                                 }
 
-                                //get the pilot of the ship if they aren't in the list already
-                                //this probably means they're remote controlling the ship, should we do something about that?
-                                /*  IMyControllableEntity ship = (IMyControllableEntity)entity;
-                                  MyControllerInfo shipController = ship.ControllerInfo;
-                                  ulong controlSteamId = PlayerMap.Instance.GetSteamIdFromPlayerId( shipController.ControllingIdentityId );
-
-                                  if ( !playersOnboard.Contains( controlSteamId ) )
-                                      playersOnboard.Add( controlSteamId );
-
-                                  if ( item.AllowedEntities.Contains( entity.EntityId ) && item.TransportAdd )
-                                  {
-                                      foreach ( ulong steamId in playersOnboard )
-                                      {
-                                          if ( !item.AllowedPlayers.Contains( steamId ) )
-                                              item.AllowedPlayers.Add( steamId );
-                                      }
-                                      continue;
-                                  }*/
                                 //there's probably a faster way to do this, but the number of items is usually pretty low, so whatever
                                 bool found = false;
                                 foreach ( ulong steamId in playersOnboard )
@@ -287,51 +277,20 @@
                                     if ( ItemWarnList.Contains( entity.EntityId ) )
                                         continue;
                                     ItemWarnList.Add( entity.EntityId );
-                                    updateWarn = true;
 
-                                    //oh hey look we FINALLY have a ship we need to stop.
                                     foreach ( ulong steamId in playersOnboard )
                                         Communication.Notification( steamId, MyFontEnum.Red, 3, "Warning: Approaching exclusion zone" );
-                                    /*
-                                    //move the ship some multiple of 100m back the direction it came
-                                    Vector3D? tmpVect = MathUtility.TraceVector( entity.GetPosition( ), entity.Physics.LinearVelocity, -100, 10 );
-                                    Vector3D moveTo;
-                                    if ( tmpVect != null )
-                                        moveTo = (Vector3D)tmpVect;
-                                    else
-                                    {
-                                        //couldn't find anywhere to put the player.
-                                        //do something about it?
-                                        continue;
-                                    }
-                                    //stop the ship and broadcast the move message to clients
-                                    //GetTopMostParent should move the ship and any subgrids, as well as items attached by landing gear
-                                    Communication.MoveMessage( 0, "normal", moveTo, entity.GetTopMostParent( ).EntityId );
-                                    entity.GetTopMostParent().Physics.LinearVelocity = Vector3D.Zero;
-                                    entity.GetTopMostParent().Physics.AngularVelocity = Vector3D.Zero;
-                                */
                                 }
                             }
 
                             if ( entity is IMyFloatingObject )
                             {
+                                if ( ItemWarnList.Contains( entity.EntityId ) )
+                                    continue;
+                                ItemWarnList.Add( entity.EntityId );
+
                                 if ( PluginSettings.Instance.ExclusionLogging )
                                     NoGrief.Log.Debug( "Found floating object in exclusion zone" );
-                                //floating object, has someone hurled a huge rock at us?
-                                if ( entity.Physics.LinearVelocity.Length( ) > 10f )
-                                {
-                                    //should we delete or just stop fast moving floaters?
-                                    entity.Physics.LinearVelocity = Vector3D.Zero;
-                                    entity.Physics.AngularVelocity = Vector3D.Zero;
-
-                                    /*this will delete the object
-                                    SandboxGameAssemblyWrapper.Instance.GameAction( ( ) =>
-                                    {
-                                        entity.Close( );
-                                        MyMultiplayer.ReplicateImmediatelly( MyExternalReplicable.FindByObject( entity ) );
-                                    //this replication shouldn't be necessary, but let's force a sync just to be safe.
-                                    } );*/
-                                }
                                 continue;
                             }
 
@@ -340,7 +299,7 @@
                                 if ( PluginSettings.Instance.ExclusionLogging )
                                     NoGrief.Log.Debug( "Found player in exclusion zone" );
                                 MyCharacter player = (MyCharacter)entity;
-                                ulong steamID = PlayerMap.Instance.GetSteamIdFromPlayerName( player.DisplayName );
+                                ulong steamID = PlayerMap.Instance.GetSteamId( entity.EntityId );
                                 if ( item.AllowedPlayers.Contains( steamID ) )
                                     continue;
                                 else if ( item.AllowAdmins && PlayerManager.Instance.IsUserAdmin( steamID ) )
@@ -350,29 +309,10 @@
                                     if ( ItemWarnList.Contains( entity.EntityId ) )
                                         continue;
                                     ItemWarnList.Add( entity.EntityId );
-                                    updateWarn = true;
                                     if ( PluginSettings.Instance.ExclusionLogging )
                                         NoGrief.Log.Debug( "Warning player" );
                                     //send the user a warning message
                                     Communication.Notification( steamID, MyFontEnum.Red, 3, "Warning: Approaching exclusion zone" );
-                                    /*
-                                    //move the player some multiple of 100m back the direction they came
-                                    Vector3D? tmpVect = MathUtility.TraceVector( entity.GetPosition( ), entity.Physics.LinearVelocity, -100, 10 );
-                                    Vector3D moveTo;
-                                    if ( tmpVect != null )
-                                        moveTo = (Vector3D)tmpVect;
-                                    else
-                                    {
-                                        //couldn't find anywhere to put the player.
-                                        //do something about it?
-                                        continue;
-                                    }
-                                    entity.Physics.LinearVelocity = Vector3D.Zero;
-                                    entity.Physics.AngularVelocity = Vector3D.Zero;
-
-                                    //tell the client to move the player
-                                    Communication.MoveMessage( player.SteamUserId, "normal", moveTo );
-                                    */
                                 }
                             }
 
@@ -380,11 +320,8 @@
 
                         protectEntities.Clear( );
                         excludedEntities.Clear( );
-                        if ( updateWarn )
-                        {
-                            WarnList.Remove( item.EntityId );
-                            WarnList.Add( item.EntityId, ItemWarnList );
-                        }
+                        WarnList.Remove( item.EntityId );
+                        WarnList.Add( item.EntityId, ItemWarnList );
                     }
                 }
                 base.Handle( );
@@ -467,10 +404,9 @@
                     }
                 }
 
-                if ( entity is IMyPlayer )
+                if ( entity is IMyCharacter )
                 {
-                    IMyPlayer player = (IMyPlayer)entity;
-                    ulong steamId = player.SteamUserId;
+                    ulong steamId = PlayerMap.Instance.GetSteamId( entity.EntityId );
 
                     if ( !item.AllowedPlayers.Contains( steamId ) )
                         item.AllowedPlayers.Add( steamId );
