@@ -7,8 +7,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NoGrief</RootNamespace>
-    <AssemblyName>NoGrief</AssemblyName>
+    <RootNamespace>NoGriefPlugin</RootNamespace>
+    <AssemblyName>NoGriefPlugin</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -71,9 +71,12 @@
     </Compile>
     <Compile Include="ChatHandlers\ChatHandlerBase.cs" />
     <Compile Include="NoGrief.cs" />
+    <Compile Include="ProcessHandlers\ProcessProtectionZone.cs" />
     <Compile Include="ProcessHandlers\ProcessExclusionZone.cs" />
+    <Compile Include="Protection\Protection.cs" />
+    <Compile Include="Settings\SettingsProtectionItem.cs" />
     <Compile Include="Utility\Communication.cs" />
-    <Compile Include="Utility\DamageHandler.cs" />
+    <Compile Include="Protection\DamageHandler.cs" />
     <Compile Include="ProcessHandlers\ProcessHandlerBase.cs" />
     <Compile Include="Settings\PluginSettings.cs" />
     <Compile Include="Settings\SettingsExclusionItem.cs" />
@@ -93,19 +96,22 @@
     <Reference Include="Sandbox.Common">
       <HintPath>..\Libraries\Sandbox.Common.dll</HintPath>
     </Reference>
-    <Reference Include="Sandbox.Game, Version=0.1.5795.28250, Culture=neutral, processorArchitecture=AMD64" />
+    <Reference Include="Sandbox.Game, Version=0.1.5863.32406, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libraries\Sandbox.Game.dll</HintPath>
+    </Reference>
     <Reference Include="SEComm, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\SEServerExtender\SEServerExtender\bin\x64\Debug\SEComm.dll</HintPath>
     </Reference>
     <Reference Include="SEModAPI">
-      <HintPath>..\Libraries\SEModAPI.dll</HintPath>
+      <HintPath>..\..\SEServerExtender\SEServerExtender\bin\x64\Debug\SEModAPI.dll</HintPath>
     </Reference>
     <Reference Include="SEModAPIExtensions">
-      <HintPath>..\Libraries\SEModAPIExtensions.dll</HintPath>
+      <HintPath>..\..\SEServerExtender\SEServerExtender\bin\x64\Debug\SEModAPIExtensions.dll</HintPath>
     </Reference>
     <Reference Include="SEModAPIInternal">
-      <HintPath>..\Libraries\SEModAPIInternal.dll</HintPath>
+      <HintPath>..\..\SEServerExtender\SEServerExtender\bin\x64\Debug\SEModAPIInternal.dll</HintPath>
     </Reference>
     <Reference Include="SpaceEngineers.ObjectBuilders">
       <HintPath>..\..\SEServerExtender\GameLibraries\SpaceEngineers.ObjectBuilders.dll</HintPath>

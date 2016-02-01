@@ -1,6 +1,7 @@
 ﻿namespace NoGriefPlugin
 {
     using System;
+    using System.Collections.Generic;
     using System.Collections.Specialized;
     using System.ComponentModel;
     using System.IO;
@@ -15,12 +16,20 @@
 
         private int _maxBlockCount;
         private int _maxSubgridCount;
-        private int _protectionTime;
-        private int _protectionRadius;
+        private int _protectionZoneTime;
+        private int _protectionZoneRadius;
         private MTObservableCollection<ExclusionItem> _exclusionItems;
         private bool _exclusionEnabled;
         private bool _exclusionLogging;
         private string _serverChatName;
+        private bool _protectionZoneEnabled;
+        private MTObservableCollection<ProtectionItem> _protectionZoneItems;
+
+        private List<long> _protectedEntities;
+        private bool _creativeProtection;
+        private bool _maxCreate;
+        private int _maxCreateSize;
+        private bool _createNotify;
 
         private static PluginSettings _instance;
         private static bool _loading = false;
@@ -87,28 +96,118 @@
             }
         }
 
-        public int ProtectionTime
+        public int ProtectionZoneTime
         {
             get
             {
-                return _protectionTime;
+                return _protectionZoneTime;
             }
             set
             {
-                _protectionTime = value;
+                _protectionZoneTime = value;
                 Save( );
             }
         }
 
-        public int ProtectionRadius
+        public int ProtectionZoneRadius
         {
             get
             {
-                return _protectionRadius;
+                return _protectionZoneRadius;
             }
             set
             {
-                _protectionRadius = value;
+                _protectionZoneRadius = value;
+                Save( );
+            }
+        }
+
+        public bool ProtectionZoneEnabled
+        {
+            get
+            {
+                return _protectionZoneEnabled;
+            }
+            set
+            {
+                _protectionZoneEnabled = value;
+                Save( );
+            }
+        }
+
+        public MTObservableCollection<ProtectionItem> ProtectionZoneItems
+        {
+            get
+            {
+                return _protectionZoneItems;
+            }
+            set
+            {
+                _protectionZoneItems = value;
+                Save( );
+            }
+        }
+        public List<long> ProtectedEntities
+        {
+            get
+            {
+                return _protectedEntities;
+            }
+            set
+            {
+                _protectedEntities = value;
+                Save( );
+            }
+        }
+
+        public bool CreativeProtection
+        {
+            get
+            {
+                return _creativeProtection;
+            }
+            set
+            {
+                _creativeProtection = value;
+                Save( );
+            }
+        }
+
+        public bool MaxCreate
+        {
+            get
+            {
+                return _maxCreate;
+            }
+            set
+            {
+                _maxCreate = value;
+                Save( );
+            }
+        } 
+
+        public int MaxCreateSize
+        {
+            get
+            {
+                return _maxCreateSize;
+            }
+            set
+            {
+                _maxCreateSize = value;
+                Save( );
+            }
+        }
+
+        public bool CreateNotify
+        {
+            get
+            {
+                return _createNotify;
+            }
+            set
+            {
+                _createNotify = value;
                 Save( );
             }
         }
@@ -168,11 +267,20 @@
             _exclusionItems.CollectionChanged += ItemsCollectionChanged;
             _maxBlockCount = 100;
             _maxSubgridCount = 5;
-            _protectionRadius = 5000;
-            _protectionTime = 10;
+            _protectionZoneRadius = 5000;
+            _protectionZoneTime = 10;
+            _protectionZoneEnabled = false;
+            _protectionZoneItems = new MTObservableCollection<ProtectionItem>( );
+            _protectionZoneItems.CollectionChanged += ItemsCollectionChanged;
             _serverChatName = "Server";
 
-        }
+            _protectedEntities = new List<long>( );
+            _creativeProtection = false;
+            _maxCreate = false;
+            _maxCreateSize = 1000;
+            _createNotify = true;
+
+    }
 
 
         #endregion

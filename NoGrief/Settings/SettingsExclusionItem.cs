@@ -17,6 +17,7 @@
         private List<ulong> allowedPlayers;
         private List<long> allowedEntities;
         private bool allowAdmins;
+        private string factionTag;
 
         public bool Enabled
         {
@@ -99,6 +100,18 @@
             set
             {
                 allowedEntities = value;
+            }
+        }
+
+        public string FactionTag
+        {
+            get
+            {
+                return factionTag;
+            }
+            set
+            {
+                factionTag = (value == null ? "" : value);
             }
         }
 

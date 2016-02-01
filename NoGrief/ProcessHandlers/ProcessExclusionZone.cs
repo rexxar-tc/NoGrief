@@ -20,6 +20,7 @@
     using Sandbox.Game.Entities.Character;
     using Sandbox.Definitions;
     using Sandbox.Game.Gui;
+    using VRage.Game.Entity;
     public class ProcessExclusionZone : ProcessHandlerBase
     {
         private static bool _init = false;
@@ -34,6 +35,7 @@
         {
             if ( PluginSettings.Instance.ExclusionEnabled )
             {
+                Dictionary<long, BoundingSphereD> bulletProtect = new Dictionary<long, BoundingSphereD>( );
 
                 if ( !_init )
                     Init( );
@@ -52,28 +54,31 @@
                             WarnList.Add( item.EntityId, ItemWarnList );
                         }
 
+                        FactionsManager _factions = FactionsManager.Instance;
+                        IMyFaction itemFaction = _factions.BackingObject.TryGetFactionByTag( item.FactionTag );
+
                         IMyEntity itemEntity;
                         if ( !MyAPIGateway.Entities.TryGetEntityById( item.EntityId, out itemEntity ) )
                         {
                             if ( PluginSettings.Instance.ExclusionLogging )
-                                NoGrief.Log.Info( "Error processing protection zone on entity {0}, could not get entity.", item.EntityId );
+                                NoGrief.Log.Info( "Error processing exclusion zone on entity {0}, could not get entity.", item.EntityId );
                             item.Enabled = false;
                             continue;
                         }
                         if ( itemEntity.Physics.LinearVelocity != Vector3D.Zero || itemEntity.Physics.AngularVelocity != Vector3D.Zero )
                         {
                             if ( PluginSettings.Instance.ExclusionLogging )
-                                NoGrief.Log.Debug( "Not processing protection zone on entity {0} -> {1} because it is moving.", item.EntityId, itemEntity.DisplayName );
+                                NoGrief.Log.Debug( "Not processing exclusion zone on entity {0} -> {1} because it is moving.", item.EntityId, itemEntity.DisplayName );
                             continue;
                         }
 
-                        //create the actual protection zone
-                        BoundingSphereD protectSphere = new BoundingSphereD( itemEntity.GetPosition( ), item.ExclusionRadius );
-                        List<IMyEntity> protectEntities = MyAPIGateway.Entities.GetEntitiesInSphere( ref protectSphere );
-
                         //create a second sphere 100m larger, this is our boundary zone
-                        protectSphere = new BoundingSphereD( itemEntity.GetPosition( ), item.ExclusionRadius + 100 );
-                        List<IMyEntity> excludedEntities = MyAPIGateway.Entities.GetEntitiesInSphere( ref protectSphere );
+                        BoundingSphereD protectSphere = new BoundingSphereD( itemEntity.GetPosition( ), item.ExclusionRadius + 100 );
+                        List<MyEntity> excludedEntities = MyEntities.GetTopMostEntitiesInSphere( ref protectSphere );
+
+                        //create the actual protection zone
+                        protectSphere = new BoundingSphereD( itemEntity.GetPosition( ), item.ExclusionRadius );
+                        List<MyEntity> protectEntities = MyEntities.GetTopMostEntitiesInSphere( ref protectSphere );
 
                         //check entities in our warning list
                         foreach ( long warnId in ItemWarnList )
@@ -88,11 +93,11 @@
 
                             if ( PluginSettings.Instance.ExclusionLogging )
                                 NoGrief.Log.Debug( "Processing WarnList. Entity type: " + warnEntity.GetType( ).ToString( ) );
-                            if ( !excludedEntities.Contains( warnEntity ) )
+                            if ( !excludedEntities.Contains( (MyEntity)warnEntity ) )
                             {
                                 //entity has left the exclusion zone
                                 ItemWarnList.Remove( warnId );
-                                if ( warnEntity is IMyCharacter )
+                                if ( warnEntity is MyCharacter )
                                 {
                                     if ( PluginSettings.Instance.ExclusionLogging )
                                         NoGrief.Log.Debug( "Player left exclusion zone" );
@@ -100,17 +105,17 @@
                                     ulong steamID = PlayerMap.Instance.GetSteamId( warnId );
                                     Communication.Notification( steamID, MyFontEnum.Green, 3, "Left exclusion zone" );
                                 }
-                                else if ( warnEntity is IMyCubeGrid )
+                                else if ( warnEntity is MyCubeGrid )
                                 {
                                     if ( PluginSettings.Instance.ExclusionLogging )
                                         NoGrief.Log.Debug( "Ship left exclusion zone" );
                                     ItemWarnList.Remove( warnId );
                                 }
                             }
-                            if ( protectEntities.Contains( warnEntity ) )
+                            if ( protectEntities.Contains( (MyEntity)warnEntity ) )
                             {
                                 //object has moved from boundary into protection zone
-                                if ( warnEntity is IMyCharacter )
+                                if ( warnEntity is MyCharacter )
                                 {
                                     if ( PluginSettings.Instance.ExclusionLogging )
                                         NoGrief.Log.Debug( "Found player in protection zone" );
@@ -155,7 +160,7 @@
                                     continue;
                                 }
 
-                                if ( warnEntity is IMyCubeGrid )
+                                if ( warnEntity is MyCubeGrid )
                                 {
                                     ItemWarnList.Remove( warnId );
                                     Vector3D? tryMove = MathUtility.TraceVector( warnEntity.GetPosition( ), warnEntity.Physics.LinearVelocity, -100 );
@@ -173,7 +178,7 @@
                                     continue;
                                 }
 
-                                if ( warnEntity is IMyFloatingObject )
+                                if ( warnEntity is MyFloatingObject )
                                 {
                                     SandboxGameAssemblyWrapper.Instance.GameAction( ( ) =>
                                     {
@@ -198,7 +203,7 @@
                         }
 
 
-                        foreach ( IMyEntity entity in excludedEntities )
+                        foreach ( MyEntity entity in excludedEntities )
                         {
                             if ( PluginSettings.Instance.ExclusionLogging && entity != null )
                             {
@@ -208,16 +213,21 @@
 
                             //ignore items in the protected sphere so we only process the boundary zone
                             if ( protectEntities.Contains( entity ) )
+                            {
+                                //protect items inside the sphere from bullets
+                                if ( entity is MyCubeGrid || entity is MyCharacter )
+                                    bulletProtect.Add( entity.EntityId, protectSphere );
                                 continue;
+                            }
 
                             if ( entity == null )
                                 continue;
 
-                            if ( entity is IMyCubeGrid )
+                            if ( entity is MyCubeGrid )
                             {
                                 if ( PluginSettings.Instance.ExclusionLogging )
                                     NoGrief.Log.Debug( "Found ship in exclusion zone" );
-                                IMyCubeGrid grid = (IMyCubeGrid)entity;
+                                MyCubeGrid grid = (MyCubeGrid)entity;
                                 MyObjectBuilder_CubeGrid gridBuilder = (MyObjectBuilder_CubeGrid)grid.GetObjectBuilder( );
                                 HashSet<ulong> playersOnboard = new HashSet<ulong>( );
 
@@ -245,21 +255,14 @@
                                 bool found = false;
                                 foreach ( ulong steamId in playersOnboard )
                                 {
-                                    if ( PluginSettings.Instance.ExclusionLogging )
-                                        NoGrief.Log.Debug( "Warning player" );
-                                    //send the user a warning message
-                                    Communication.Notification( steamId, MyFontEnum.Red, 3, "Warning: Approaching exclusion zone" );
+                                    
 
                                     if ( item.AllowedPlayers.Contains( steamId ) )
-                                    {
                                         found = true;
-                                        break;
-                                    }
-                                    if ( item.AllowAdmins && PlayerManager.Instance.IsUserAdmin( steamId ) )
-                                    {
+                                    else if ( itemFaction != null && itemFaction.IsMember( PlayerMap.Instance.GetFastPlayerIdFromSteamId( steamId ) ) )
                                         found = true;
-                                        break;
-                                    }
+                                    else if ( item.AllowAdmins && PlayerManager.Instance.IsUserAdmin( steamId ) )
+                                        found = true;
                                 }
                                 if ( found && item.TransportAdd )
                                 {
@@ -279,11 +282,15 @@
                                     ItemWarnList.Add( entity.EntityId );
 
                                     foreach ( ulong steamId in playersOnboard )
+                                    {
+                                        if ( PluginSettings.Instance.ExclusionLogging )
+                                            NoGrief.Log.Debug( "Warning player: " + PlayerMap.Instance.GetFastPlayerNameFromSteamId( steamId ) );
                                         Communication.Notification( steamId, MyFontEnum.Red, 3, "Warning: Approaching exclusion zone" );
+                                    }
                                 }
                             }
 
-                            if ( entity is IMyFloatingObject )
+                            if ( entity is MyFloatingObject )
                             {
                                 if ( ItemWarnList.Contains( entity.EntityId ) )
                                     continue;
@@ -294,13 +301,15 @@
                                 continue;
                             }
 
-                            if ( entity is IMyCharacter )
+                            if ( entity is MyCharacter )
                             {
                                 if ( PluginSettings.Instance.ExclusionLogging )
                                     NoGrief.Log.Debug( "Found player in exclusion zone" );
                                 MyCharacter player = (MyCharacter)entity;
                                 ulong steamID = PlayerMap.Instance.GetSteamId( entity.EntityId );
                                 if ( item.AllowedPlayers.Contains( steamID ) )
+                                    continue;
+                                else if ( itemFaction != null && itemFaction.IsMember( PlayerMap.Instance.GetFastPlayerIdFromSteamId( steamID ) ) )
                                     continue;
                                 else if ( item.AllowAdmins && PlayerManager.Instance.IsUserAdmin( steamID ) )
                                     continue;
@@ -310,8 +319,7 @@
                                         continue;
                                     ItemWarnList.Add( entity.EntityId );
                                     if ( PluginSettings.Instance.ExclusionLogging )
-                                        NoGrief.Log.Debug( "Warning player" );
-                                    //send the user a warning message
+                                        NoGrief.Log.Debug( "Warning player: " + PlayerMap.Instance.GetFastPlayerNameFromSteamId( steamID ) );
                                     Communication.Notification( steamID, MyFontEnum.Red, 3, "Warning: Approaching exclusion zone" );
                                 }
                             }
@@ -324,6 +332,11 @@
                         WarnList.Add( item.EntityId, ItemWarnList );
                     }
                 }
+                //update the real list of protected entities only after we're done processing them
+                //it's easier to clear it like this than track when entities leave the protection zone
+                DamageHandler.BulletProtect.Clear( );
+                if(bulletProtect!= null )
+                DamageHandler.BulletProtect = bulletProtect;
                 base.Handle( );
             }
         }
@@ -346,27 +359,27 @@
 
             IMyEntity itemEntity;
             if ( PluginSettings.Instance.ExclusionLogging )
-                NoGrief.Log.Debug( "Initializing protection zone on entity {0}", item.EntityId );
+                NoGrief.Log.Debug( "Initializing exclusion zone on entity {0}", item.EntityId );
 
             if ( !MyAPIGateway.Entities.TryGetEntityById( item.EntityId, out itemEntity ) )
             {
                 if ( PluginSettings.Instance.ExclusionLogging )
-                    NoGrief.Log.Info( "Couldn't initialize protection zone on entity {0}", item.EntityId );
+                    NoGrief.Log.Info( "Couldn't initialize exclusion zone on entity {0}", item.EntityId );
                 item.Enabled = false;
                 return;
             }
             if ( itemEntity.Physics.LinearVelocity != Vector3D.Zero || itemEntity.Physics.AngularVelocity != Vector3D.Zero )
             {
                 if ( PluginSettings.Instance.ExclusionLogging )
-                    NoGrief.Log.Info( "Couldn't initialize protection zone on entity {0} -> {1}, entity is moving.", item.EntityId, itemEntity.DisplayName );
+                    NoGrief.Log.Info( "Couldn't initialize exclusion zone on entity {0} -> {1}, entity is moving.", item.EntityId, itemEntity.DisplayName );
                 return;
             }
 
             BoundingSphereD protectSphere = new BoundingSphereD( itemEntity.GetPosition( ), item.ExclusionRadius );
-            List<IMyEntity> protectEntities = MyAPIGateway.Entities.GetEntitiesInSphere( ref protectSphere );
-            foreach ( IMyEntity entity in protectEntities )
+            List<MyEntity> protectEntities = MyEntities.GetTopMostEntitiesInSphere( ref protectSphere );
+            foreach ( MyEntity entity in protectEntities )
             {
-                if ( entity is IMyCubeGrid )
+                if ( entity is MyCubeGrid )
                 {
                     long entityId = entity.EntityId;
                     if ( !item.AllowedEntities.Contains( entityId ) )
@@ -375,7 +388,7 @@
 
                     try
                     {
-                        IMyCubeGrid tmpGrid = (IMyCubeGrid)entity;
+                        MyCubeGrid tmpGrid = (MyCubeGrid)entity;
                         ownerList = tmpGrid.BigOwners;
                     }
                     catch ( Exception ex )
@@ -404,7 +417,7 @@
                     }
                 }
 
-                if ( entity is IMyCharacter )
+                if ( entity is MyCharacter )
                 {
                     ulong steamId = PlayerMap.Instance.GetSteamId( entity.EntityId );
 

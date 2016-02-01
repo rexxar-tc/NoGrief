@@ -16,7 +16,7 @@
     using VRage;
     using VRageMath;
     using SEModAPI.API.Definitions;
-
+    using System.Text;
     public class Communication
 	{
 		private static readonly Logger Log = LogManager.GetLogger( "PluginLog" );
@@ -32,14 +32,16 @@
                 MessageItem.Message = infoText;
 
             string messageString = MyAPIGateway.Utilities.SerializeToXML( MessageItem );
-            byte[ ] data = new byte[messageString.Length];
+            byte[ ] data = Encoding.Unicode.GetBytes( messageString );
 
-            for ( int r = 0; r < messageString.Length; r++ )
+            if ( ChatManager.EnableData )
             {
-                data[r] = (byte)messageString[r];
+                BroadcastDataMessage( DataMessageType.Message, data );
             }
+            else
+                ChatManager.Instance.SendPublicChatMessage( infoText );
 
-            BroadcastDataMessage( DataMessageType.Message, data );
+            ChatManager.Instance.AddChatHistory( new ChatManager.ChatEvent( DateTime.Now, 0, infoText ) );
         }
 
 		public static void SendPrivateInformation( ulong playerId, string infoText, string from = null )
@@ -130,12 +132,7 @@
             MoveItem.entityId = entityId;
 
             string messageString = MyAPIGateway.Utilities.SerializeToXML( MoveItem );
-            byte[ ] data = new byte[messageString.Length];
-
-            for ( int r = 0; r < messageString.Length; r++ )
-            {
-                data[r] = (byte)messageString[r];
-            }
+            byte[ ] data = Encoding.Unicode.GetBytes( messageString );
             if ( steamId != 0 )
                 SendDataMessage( steamId, DataMessageType.Move, data );
             else
@@ -151,17 +148,11 @@
             MoveItem.z = position.Z;
 
             string messageString = MyAPIGateway.Utilities.SerializeToXML( MoveItem );
-            byte[ ] data = new byte[messageString.Length];
-
-            for ( int r = 0; r < messageString.Length; r++ )
-            {
-                data[r] = (byte)messageString[r];
-            }
-
+            byte[ ] data = Encoding.Unicode.GetBytes( messageString );
             if ( steamId != 0 )
                 SendDataMessage( steamId, DataMessageType.Move, data );
-
-            BroadcastDataMessage( DataMessageType.Move, data );
+            else
+                BroadcastDataMessage( DataMessageType.Move, data );
         }
 
         public static void SendDataMessage( ulong steamId, DataMessageType messageType, byte[ ] data )
