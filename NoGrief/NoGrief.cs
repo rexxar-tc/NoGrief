@@ -36,6 +36,7 @@
     using NoGriefPlugin.Settings;
     using NoGriefPlugin;
     using NoGriefPlugin.UtilityClasses;
+    using NoGriefPlugin.Protection;
     using ChatHandlers;
     using ProcessHandlers;
     using Sandbox.ModAPI;
@@ -43,7 +44,9 @@
     using SEModAPI.API.Utility;
     using VRage.ModAPI;
     using Utility;
-    public class NoGrief : IPlugin, IChatEventHandler, IPlayerEventHandler
+    using VRage.Game.Entity;
+    using Sandbox.Game.Entities;
+    public class NoGrief : IPlugin, IChatEventHandler
     {
 
         public static Logger Log;
@@ -138,6 +141,118 @@
             }
         }
 
+        [Category( "Protection Zones" )]
+        [Description( "Turn protection zones on or off" )]
+        [Browsable( true )]
+        [ReadOnly( false )]
+        public bool ProtectionZoneEnabled
+        {
+            get
+            {
+                return PluginSettings.Instance.ProtectionZoneEnabled;
+            }
+            set
+            {
+                PluginSettings.Instance.ProtectionZoneEnabled = value;
+            }
+        }
+
+        [Category( "Protection Zones" )]
+        [Description( "Ships in these zones are invulnerable" )]
+        [Browsable( true )]
+        [ReadOnly( false )]
+        public MTObservableCollection<ProtectionItem> ProtectionZoneItems
+        {
+            get
+            {
+                return PluginSettings.Instance.ProtectionZoneItems;
+            }
+            set
+            {
+                PluginSettings.Instance.ProtectionZoneItems = value;
+            }
+        }
+        /*
+        [Category( "Protection" )]
+        [Description( "These ships are invulnerable" )]
+        [Browsable( true )]
+        [ReadOnly( true )]
+        public List<long> ProtectedEntities
+        {
+            get
+            {
+                return PluginSettings.Instance.ProtectedEntities;
+            }
+            set
+            {
+                PluginSettings.Instance.ProtectedEntities = value;
+            }
+        }
+
+        [Category( "Protection" )]
+        [Description( "This setting prevents blocks being added or removed in creative mode" )]
+        [Browsable( true )]
+        [ReadOnly( true )]
+        public bool CreativeProtection
+        {
+            get
+            {
+                return PluginSettings.Instance.CreativeProtection;
+            }
+            set
+            {
+                PluginSettings.Instance.CreativeProtection = value;
+            }
+        }
+        */
+        [Category( "Protection" )]
+        [Description( "This prevents pasting/spawning grids over a certain block count" )]
+        [Browsable( true )]
+        [ReadOnly( false )]
+        public bool CreateProtect
+        {
+            get
+            {
+                return PluginSettings.Instance.MaxCreate;
+            }
+            set
+            {
+                PluginSettings.Instance.MaxCreate = value;
+            }
+        }
+
+        [Category( "Protection" )]
+        [Description( "Maximum size of grids that can be created" )]
+        [Browsable( true )]
+        [ReadOnly( false )]
+        public int MaxCreateSize
+        {
+            get
+            {
+                return PluginSettings.Instance.MaxCreateSize;
+            }
+            set
+            {
+                PluginSettings.Instance.MaxCreateSize = value;
+            }
+        }
+
+        [Category( "Protection" )]
+        [Description( "Sends a global chat message when a grid over the limit is created" )]
+        [Browsable( true )]
+        [ReadOnly( false )]
+        public bool MaxCreateNotify
+        {
+            get
+            {
+                return PluginSettings.Instance.CreateNotify;
+            }
+            set
+            {
+                PluginSettings.Instance.CreateNotify = value;
+            }
+        }
+
         /*
         [Category( "Player Protection" )]
         [Description( "Amount of time, in minutes, after a player logs off before their station is protected" )]
@@ -215,21 +330,11 @@
 
             if ( obj.Message[0] == '/' )
             {
-                bool isadmin = false;// = SandboxGameAssemblyWrapper.Instance.IsUserAdmin(obj.SourceUserId);
-                string[ ] words = obj.Message.Split( ' ' );
-                //string rem = "";
-                //proccess
-
 
             }
             return;
         }
         #endregion
-
-
-
-
-
 
         #region Constructors and Initializers
 
@@ -245,7 +350,8 @@
             // Setup process handlers
             _processHandlers = new List<ProcessHandlerBase>
             {
-                new ProcessExclusionZone( )
+                new ProcessExclusionZone( ),
+                new ProcessProtectionZone()
             };
 
             // Setup chat handlers
@@ -257,7 +363,8 @@
             _processThreads = new List<Thread>( );
             _processThread = new Thread( PluginProcessing );
             _processThread.Start( );
-
+            DamageHandler.Init( );
+            Protection.Protection.Init( );
             Log.Info( "Plugin '{0}' initialized. (Version: {1}  ID: {2})", Name, Version, Id );
         }
 
@@ -300,39 +407,7 @@
 
                 foreach ( Thread thread in _processThreads )
                     thread.Join( );
-
-                /*
-                while (true)
-                {
-                    if (DateTime.Now - m_lastProcessUpdate > TimeSpan.FromMilliseconds(100))
-                    {
-                        Parallel.ForEach(_processHandlers, handler => 
-                        {
-                            if (handler.CanProcess())
-                            {
-                                try
-                                {
-                                    handler.Handle();
-                                }
-                                catch (Exception ex)
-                                {
-                                    Log.Info(String.Format("Handler Problems: {0} - {1}", handler.GetUpdateResolution(), ex.ToString()));
-                                }
-
-                                // Let's make sure LastUpdate is set to now otherwise we may start processing too quickly
-                                handler.LastUpdate = DateTime.Now;
-                            }
-                        });
-
-                        //foreach (ProcessHandlerBase handler in _processHandlers)
-                        //{
-                        //}
-                        m_lastProcessUpdate = DateTime.Now;
-                    }
-                    Thread.Sleep(25);
-                }
-                */
-
+                        
             }
             catch ( ThreadAbortException ex )
             {
@@ -401,12 +476,7 @@
             // Parse chat message
             ulong remoteUserId = steamId;
             List<string> commandParts = CommandParser.GetCommandParts( message );
-
-            if ( commandParts[0].ToLower( ) == "/help" )
-            {
-                //user wants some help
-            }
-
+            
             // See if we have any valid handlers
             bool handled = false;
             foreach ( ChatHandlerBase chatHandler in _chatHandlers )
@@ -711,12 +781,6 @@
         {
             foreach ( ProcessHandlerBase handler in _processHandlers )
                 handler.OnPlayerLeft( remoteUserId );
-        }
-
-        public void OnPlayerWorldSent( ulong remoteUserId )
-        {
-            foreach ( ProcessHandlerBase handler in _processHandlers )
-                handler.OnPlayerWorldSent( remoteUserId );
         }
 
         #endregion
