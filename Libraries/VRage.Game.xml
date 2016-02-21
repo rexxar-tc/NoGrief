@@ -4,6 +4,78 @@
         <name>VRage.Game</name>
     </assembly>
     <members>
+        <member name="P:VRage.Game.Components.MySessionComponentBase.IsRequiredByGame">
+            <summary>
+            Indicates whether a session component should be used in current configuration.
+            Example: MyDestructionData component returns true only when game uses Havok Destruction
+            </summary>
+        </member>
+        <member name="F:Sandbox.Definitions.MyDefinitionBase.DisplayNameEnum">
+            <summary>
+            Enum used for localization of display name. Null for player created definitions.
+            </summary>
+        </member>
+        <member name="F:Sandbox.Definitions.MyDefinitionBase.DescriptionEnum">
+            <summary>
+            Enum used for localization of description. Null for player created definitions.
+            </summary>
+        </member>
+        <member name="F:Sandbox.Definitions.MyDefinitionBase.DisplayNameString">
+            <summary>
+            String name used for user created definitions which do not have localization support.
+            </summary>
+        </member>
+        <member name="F:Sandbox.Definitions.MyDefinitionBase.DescriptionString">
+            <summary>
+            String used for user created description which do not have localization support.
+            </summary>
+        </member>
+        <member name="F:Sandbox.Definitions.MyDefinitionBase.Enabled">
+            <summary>
+            Definition can be disabled by mod, then it will be removed from definition manager
+            </summary>
+        </member>
+        <member name="F:Sandbox.Definitions.MyDefinitionBase.Public">
+            <summary>
+            Indicates if definition should be offered in Cube builder
+            </summary>
+        </member>
+        <member name="M:Sandbox.Definitions.MyDefinitionBase.Postprocess">
+            <summary>
+            Override this in case you want to do some postprocessing of the definition before the game starts.
+            <para>Postprocess is useful if you want to process the definition before the game begins,</para>
+            <para>but you only want to do it when all the definitions are loaded and merged.</para>
+            </summary>
+        </member>
+        <member name="P:Sandbox.Definitions.MyDefinitionBase.DisplayNameText">
+            <summary>
+            Use this property when showing name in GUI instead of DisplayName. This takes into
+            account more complex name construction.
+            </summary>
+        </member>
+        <member name="P:Sandbox.Definitions.MyDefinitionBase.DescriptionText">
+            <summary>
+            Use this property when showing description in GUI, as it takes into account more
+            complex description construction.
+            </summary>
+        </member>
+        <member name="M:VRage.Game.Definitions.MyDefinitionSet.AddDefinition(Sandbox.Definitions.MyDefinitionBase)">
+            Add a new definition to the set.
+            
+            Crashes if existing.
+        </member>
+        <member name="M:VRage.Game.Definitions.MyDefinitionSet.AddOrRelaceDefinition(Sandbox.Definitions.MyDefinitionBase)">
+            Add or replace an existing definition.
+        </member>
+        <member name="M:VRage.Game.Definitions.MyDefinitionSet.RemoveDefinition(Sandbox.Definitions.MyDefinitionId@)">
+            Remove a definition if on the set.
+        </member>
+        <member name="M:VRage.Game.Definitions.MyDefinitionSet.GetDefinitionsOfType``1">
+            Get all definitions of a given type.
+        </member>
+        <member name="M:VRage.Game.Definitions.MyDefinitionSet.OverrideBy(VRage.Game.Definitions.MyDefinitionSet)">
+            Override the contents of this definition set with another.
+        </member>
         <member name="T:VRage.Game.Components.MyAnimationControllerComponent">
             <summary>
             Entity component containing animation controller.
@@ -53,14 +125,27 @@
             Component will be removed from entity component container.
             </summary>
         </member>
+        <member name="M:VRage.Game.Components.MyAnimationControllerComponent.TriggerAction(VRage.Utils.MyStringId)">
+            <summary>
+            Trigger an action in this layer. 
+            If there is a transition having given (non-null) name, it is followed immediatelly.
+            Conditions of transition are ignored.
+            This is a shortcut to Controller.TriggerAction.
+            </summary>
+        </member>
         <member name="P:VRage.Game.Components.MyAnimationControllerComponent.ComponentTypeDebugString">
             <summary>
             Name of the component type for debug purposes (e.g.: "Position")
             </summary>
         </member>
-        <member name="P:VRage.Game.Components.MyAnimationControllerComponent.AnimationController">
+        <member name="P:VRage.Game.Components.MyAnimationControllerComponent.Controller">
             <summary>
             Get the animation controller instance.
+            </summary>
+        </member>
+        <member name="P:VRage.Game.Components.MyAnimationControllerComponent.Variables">
+            <summary>
+            Get the variable storage of animation controller instance. Shortcut.
             </summary>
         </member>
         <member name="P:VRage.Game.Components.MyAnimationControllerComponent.CharacterBones">
@@ -249,6 +334,53 @@
             Display Name for GUI etc. Override in descendant classes. Usually used to display in terminal or inventory controls.
             </summary>
         </member>
+        <member name="M:VRage.Game.Entity.UseObject.IMyUseObject.Use(VRage.Game.Entity.UseObject.UseActionEnum,VRage.ModAPI.IMyEntity)">
+            <summary>
+            Uses object by specified action
+            Caller calls this method only on supported actions
+            </summary>
+        </member>
+        <member name="M:VRage.Game.Entity.UseObject.IMyUseObject.GetActionInfo(VRage.Game.Entity.UseObject.UseActionEnum)">
+            <summary>
+            Gets action text
+            Caller calls this method only on supported actions
+            </summary>
+        </member>
+        <member name="P:VRage.Game.Entity.UseObject.IMyUseObject.InteractiveDistance">
+            <summary>
+            Consider object as being in interactive range only if distance from character is smaller or equal to this value
+            </summary>
+        </member>
+        <member name="P:VRage.Game.Entity.UseObject.IMyUseObject.ActivationMatrix">
+            <summary>
+            Matrix of object, scale represents size of object
+            </summary>
+        </member>
+        <member name="P:VRage.Game.Entity.UseObject.IMyUseObject.WorldMatrix">
+            <summary>
+            Matrix of object, scale represents size of object
+            </summary>
+        </member>
+        <member name="P:VRage.Game.Entity.UseObject.IMyUseObject.RenderObjectID">
+            <summary>
+            Render ID of objects 
+            </summary>
+        </member>
+        <member name="P:VRage.Game.Entity.UseObject.IMyUseObject.ShowOverlay">
+            <summary>
+            Show overlay (semitransparent bounding box)
+            </summary>
+        </member>
+        <member name="P:VRage.Game.Entity.UseObject.IMyUseObject.SupportedActions">
+            <summary>
+            Returns supported actions
+            </summary>
+        </member>
+        <member name="P:VRage.Game.Entity.UseObject.IMyUseObject.ContinuousUsage">
+            <summary>
+            When true, use will be called every frame
+            </summary>
+        </member>
         <member name="P:VRage.Game.Gui.MyHudEntityParams.ShouldDraw">
             <summary>
             Function that checks whether indicator should be drawn.
@@ -303,12 +435,6 @@
             Is closing of objects allowed?
             </summary>
         </member>
-        <member name="P:VRage.Game.Components.MySessionComponentBase.IsRequiredByGame">
-            <summary>
-            Indicates whether a session component should be used in current configuration.
-            Example: MyDestructionData component returns true only when game uses Havok Destruction
-            </summary>
-        </member>
         <member name="M:VRage.Game.SessionComponents.MySessionComponentAnimationSystem.RegisterEntityComponent(VRage.Game.Components.MyAnimationControllerComponent)">
             <summary>
             Register entity component.
@@ -317,6 +443,31 @@
         <member name="M:VRage.Game.SessionComponents.MySessionComponentAnimationSystem.UnregisterEntityComponent(VRage.Game.Components.MyAnimationControllerComponent)">
             <summary>
             Unregister entity component.
+            </summary>
+        </member>
+        <member name="F:VRage.Game.ObjectBuilders.MyObjectBuilder_AnimationTreeNodeTrack.AnimationName">
+            <summary>
+            Name of used track (animation).
+            </summary>
+        </member>
+        <member name="F:VRage.Game.ObjectBuilders.MyObjectBuilder_AnimationTreeNodeTrack.Loop">
+            <summary>
+            If true, animation will be looped. Default value is true.
+            </summary>
+        </member>
+        <member name="F:VRage.Game.ObjectBuilders.MyObjectBuilder_AnimationTreeNodeTrack.Speed">
+            <summary>
+            Playing speed.
+            </summary>
+        </member>
+        <member name="F:VRage.Game.ObjectBuilders.MyObjectBuilder_AnimationTreeNodeMix1D.ParameterName">
+            <summary>
+            Name of parameter controlling blending inside this node.
+            </summary>
+        </member>
+        <member name="F:VRage.Game.ObjectBuilders.MyObjectBuilder_AnimationTreeNodeMix1D.Children">
+            <summary>
+            Mapping children to axis. Each child has assigned its value.
             </summary>
         </member>
         <member name="M:VRage.ObjectBuilders.MyObjectBuilder_EntityBase.Remap(VRage.ModAPI.IMyRemapHelper)">
@@ -900,53 +1051,6 @@
             <summary>
             Freezes allocating entity ids.
             This is important, because during load, no entity cannot allocate new id, because it could allocate id which already has entity which will be loaded soon.
-            </summary>
-        </member>
-        <member name="M:VRage.Game.Entity.UseObject.IMyUseObject.Use(VRage.Game.Entity.UseObject.UseActionEnum,VRage.ModAPI.IMyEntity)">
-            <summary>
-            Uses object by specified action
-            Caller calls this method only on supported actions
-            </summary>
-        </member>
-        <member name="M:VRage.Game.Entity.UseObject.IMyUseObject.GetActionInfo(VRage.Game.Entity.UseObject.UseActionEnum)">
-            <summary>
-            Gets action text
-            Caller calls this method only on supported actions
-            </summary>
-        </member>
-        <member name="P:VRage.Game.Entity.UseObject.IMyUseObject.InteractiveDistance">
-            <summary>
-            Consider object as being in interactive range only if distance from character is smaller or equal to this value
-            </summary>
-        </member>
-        <member name="P:VRage.Game.Entity.UseObject.IMyUseObject.ActivationMatrix">
-            <summary>
-            Matrix of object, scale represents size of object
-            </summary>
-        </member>
-        <member name="P:VRage.Game.Entity.UseObject.IMyUseObject.WorldMatrix">
-            <summary>
-            Matrix of object, scale represents size of object
-            </summary>
-        </member>
-        <member name="P:VRage.Game.Entity.UseObject.IMyUseObject.RenderObjectID">
-            <summary>
-            Render ID of objects 
-            </summary>
-        </member>
-        <member name="P:VRage.Game.Entity.UseObject.IMyUseObject.ShowOverlay">
-            <summary>
-            Show overlay (semitransparent bounding box)
-            </summary>
-        </member>
-        <member name="P:VRage.Game.Entity.UseObject.IMyUseObject.SupportedActions">
-            <summary>
-            Returns supported actions
-            </summary>
-        </member>
-        <member name="P:VRage.Game.Entity.UseObject.IMyUseObject.ContinuousUsage">
-            <summary>
-            When true, use will be called every frame
             </summary>
         </member>
         <member name="T:VRage.ModAPI.EntityFlags">
@@ -4726,53 +4830,29 @@
             Selected medical room is not ready. Please wait until it is streamed from server.
             </summary>
         </member>
-        <member name="F:Sandbox.Definitions.MyDefinitionBase.DisplayNameEnum">
+        <member name="F:MyCommonTexts.MessageBoxF12Question">
             <summary>
-            Enum used for localization of display name. Null for player created definitions.
+            WARNING
             </summary>
         </member>
-        <member name="F:Sandbox.Definitions.MyDefinitionBase.DescriptionEnum">
+        <member name="F:MyCommonTexts.MessageBoxTextF12Question">
             <summary>
-            Enum used for localization of description. Null for player created definitions.
+            You are entering the developer debug screen. Some of the features may crash the game or cause other errors. Continue?
             </summary>
         </member>
-        <member name="F:Sandbox.Definitions.MyDefinitionBase.DisplayNameString">
+        <member name="F:MyCommonTexts.NotificationStatNotEnough">
             <summary>
-            String name used for user created definitions which do not have localization support.
+            Not enough {0}.
             </summary>
         </member>
-        <member name="F:Sandbox.Definitions.MyDefinitionBase.DescriptionString">
+        <member name="F:MyCommonTexts.NotificationStatZero">
             <summary>
-            String used for user created description which do not have localization support.
+            You are out of {0}.
             </summary>
         </member>
-        <member name="F:Sandbox.Definitions.MyDefinitionBase.Enabled">
+        <member name="F:MyCommonTexts.MuteWhenNotInFocus">
             <summary>
-            Definition can be disabled by mod, then it will be removed from definition manager
-            </summary>
-        </member>
-        <member name="F:Sandbox.Definitions.MyDefinitionBase.Public">
-            <summary>
-            Indicates if definition should be offered in Cube builder
-            </summary>
-        </member>
-        <member name="M:Sandbox.Definitions.MyDefinitionBase.Postprocess">
-            <summary>
-            Override this in case you want to do some postprocessing of the definition before the game starts.
-            <para>Postprocess is useful if you want to process the definition before the game begins,</para>
-            <para>but you only want to do it when all the definitions are loaded and merged.</para>
-            </summary>
-        </member>
-        <member name="P:Sandbox.Definitions.MyDefinitionBase.DisplayNameText">
-            <summary>
-            Use this property when showing name in GUI instead of DisplayName. This takes into
-            account more complex name construction.
-            </summary>
-        </member>
-        <member name="P:Sandbox.Definitions.MyDefinitionBase.DescriptionText">
-            <summary>
-            Use this property when showing description in GUI, as it takes into account more
-            complex description construction.
+            Mute when inactive
             </summary>
         </member>
         <member name="F:Sandbox.Common.ObjectBuilders.Definitions.BlueprintItem.Amount">
@@ -4843,9 +4923,9 @@
             Physics shape used after character's death.
             </summary>
         </member>
-        <member name="F:Sandbox.Common.ObjectBuilders.Definitions.MyObjectBuilder_CharacterDefinition.UseNewAnimationSystem">
+        <member name="F:Sandbox.Common.ObjectBuilders.Definitions.MyObjectBuilder_CharacterDefinition.AnimationController">
             <summary>
-            VRAGE TODO: THIS IS TEMPORARY! Remove when by the time we use only the new animation system.
+            Name of used animation controller.
             </summary>
         </member>
         <member name="F:Sandbox.Common.ObjectBuilders.Definitions.MyAutorotateMode.OneDirection">

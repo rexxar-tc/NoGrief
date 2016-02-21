@@ -75,6 +75,8 @@
     <Compile Include="ProcessHandlers\ProcessExclusionZone.cs" />
     <Compile Include="Protection\Protection.cs" />
     <Compile Include="Settings\SettingsProtectionItem.cs" />
+    <Compile Include="SyncHandlers\SyncGridHandler.cs" />
+    <Compile Include="SyncHandlers\SyncHandlerBase.cs" />
     <Compile Include="Utility\Communication.cs" />
     <Compile Include="Protection\DamageHandler.cs" />
     <Compile Include="ProcessHandlers\ProcessHandlerBase.cs" />
@@ -86,7 +88,9 @@
     <Compile Include="UtilityClasses\SerializeableDictionary.cs" />
     <Compile Include="Settings\SettingsDialogItem.cs" />
     <Compile Include="UtilityClasses\UIEditors.cs" />
+    <Compile Include="Utility\Extensions.cs" />
     <Compile Include="Utility\MathUtility.cs" />
+    <Compile Include="Utility\Wrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
