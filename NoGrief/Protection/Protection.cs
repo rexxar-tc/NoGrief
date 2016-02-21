@@ -32,14 +32,18 @@ namespace NoGriefPlugin.Protection
                 return;
 
             var grid = (MyCubeGrid)obj;
+
+            if ( grid.Physics == null )
+                return;
            
             if ( grid.BlocksCount > PluginSettings.Instance.MaxCreateSize )
             {
-                grid.Close( );
                 if(PluginSettings.Instance.CreateNotify )
                     Communication.SendPublicInformation( string.Format( "Grids larger than {0} blocks cannot be spawned in this world.", PluginSettings.Instance.MaxCreateSize ) );
 
-                NoGrief.Log.Info( "Entity creation stopped" );
+                NoGrief.Log.Info( "Entity creation stopped. Size: " + grid.BlocksCount.ToString() );
+
+                grid.Close( );
             } 
         }
     }

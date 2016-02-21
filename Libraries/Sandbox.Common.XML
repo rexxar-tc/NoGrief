@@ -1425,6 +1425,11 @@
             This is entry point for entire scripting possibilities in game
             </summary>
         </member>
+        <member name="F:Sandbox.ModAPI.MyAPIGateway.GuiControlCreated">
+            <summary>
+            Event triggered on gui control created.
+            </summary>
+        </member>
         <member name="F:Sandbox.ModAPI.MyAPIGateway.Players">
             <summary>
             IMyPlayerCollection contains all players that are in world 

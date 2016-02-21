@@ -1,4 +1,7 @@
-﻿namespace NoGriefPlugin.ProcessHandlers
+﻿using System.Linq;
+using System.Threading;
+
+namespace NoGriefPlugin.ProcessHandlers
 {
     using NoGriefPlugin.Settings;
     using NoGriefPlugin;
@@ -42,6 +45,7 @@
                         continue;
 
                     IMyEntity itemEntity;
+                    
                     if ( !MyAPIGateway.Entities.TryGetEntityById( item.EntityId, out itemEntity ) )
                     {
                         if ( PluginSettings.Instance.ExclusionLogging )
@@ -49,12 +53,12 @@
                         item.Enabled = false;
                         continue;
                     }
-                   /* if ( itemEntity.Physics.LinearVelocity != Vector3D.Zero || itemEntity.Physics.AngularVelocity != Vector3D.Zero )
+                    if ( itemEntity.Physics.LinearVelocity != Vector3D.Zero || itemEntity.Physics.AngularVelocity != Vector3D.Zero )
                     {
                         if ( PluginSettings.Instance.ExclusionLogging )
                             NoGrief.Log.Debug( "Not processing protection zone on entity {0} -> {1} because it is moving.", item.EntityId, itemEntity.DisplayName );
                         continue;
-                    }*/
+                    }
                     //create the actual protection zone
                     BoundingSphereD protectSphere = new BoundingSphereD( itemEntity.GetPosition( ), item.ProtectionRadius );
                     List<MyEntity> protectEntities = MyEntities.GetTopMostEntitiesInSphere( ref protectSphere );
@@ -69,12 +73,28 @@
                             List<IMySlimBlock> blocks = new List<IMySlimBlock>( );
                             if ( item.MaxGridSize != 0 && grid.BlocksCount > item.MaxGridSize )
                             {
-                                //send a message to pilot(s) that this grid is not protected
+                                List<ulong> steamIds = grid.GetPilotSteamIds();
+                                if (steamIds.Any())
+                                {
+                                    foreach (ulong steamId in steamIds)
+                                    {
+                                        Communication.Notification(steamId, MyFontEnum.DarkBlue, 5, 
+                                            $"This grid has exceeded the max block count of {item.MaxGridSize} and is not protected.");
+                                    }
+                                }
                                 continue;
                             }
                             if ( item.MaxGridCount != 0 && gridCount > item.MaxGridCount )
                             {
-                                //send a message to pilot(s) that this grid is not protected
+                                List<ulong> steamIds = grid.GetPilotSteamIds( );
+                                if ( steamIds.Any( ) )
+                                {
+                                    foreach ( ulong steamId in steamIds )
+                                    {
+                                        Communication.Notification( steamId, MyFontEnum.DarkBlue, 5, 
+                                            "Protected grid count exceeded. This grid is not protected." );
+                                    }
+                                }
                                 continue;
                             }
                             protectedId.Add( entity.EntityId );
@@ -85,10 +105,10 @@
                 //update the real list of protected entities only after we're done processing them
                 //it's easier to clear it like this than track when entities leave the protection zone
                 DamageHandler.ProtectedId.Clear( );
-                if(protectedId!= null )
+                
                 DamageHandler.ProtectedId = protectedId;
                 base.Handle( );
             }
-        }        
+        }
     }
 }

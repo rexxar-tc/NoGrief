@@ -141,11 +141,7 @@
                                     Communication.MoveMessage( steamID, "normal", (Vector3D)tryMove );
                                     Communication.Notification( steamID, MyFontEnum.Red, 3, "You have been removed from the protection zone." );
                                     //stop the object
-                                    SandboxGameAssemblyWrapper.Instance.GameAction( ( ) =>
-                                    {
-                                        warnEntity.Physics.LinearVelocity = Vector3D.Zero;
-                                        warnEntity.Physics.AngularVelocity = Vector3D.Zero;
-                                    } );
+                                    warnEntity.Stop();
                                 }
 
                                 if ( warnEntity is IMyMissileGunObject )
@@ -170,11 +166,7 @@
                                     }
                                     Communication.MoveMessage( 0, "normal", (Vector3D)tryMove, warnEntity.GetTopMostParent( ).EntityId );
                                     //stop the object
-                                    SandboxGameAssemblyWrapper.Instance.GameAction( ( ) =>
-                                    {
-                                        warnEntity.Physics.LinearVelocity = Vector3D.Zero;
-                                        warnEntity.Physics.AngularVelocity = Vector3D.Zero;
-                                    } );
+                                    warnEntity.Stop();
                                     continue;
                                 }
 
