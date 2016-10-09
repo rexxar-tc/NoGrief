@@ -1,421 +1,116 @@
-﻿namespace NoGriefPlugin
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Threading;
+using NLog;
+using NoGriefPlugin.ChatHandlers;
+using NoGriefPlugin.ProcessHandlers;
+using NoGriefPlugin.Protection;
+using NoGriefPlugin.Utility;
+using SEModAPI.API.Utility;
+using SEModAPIExtensions.API;
+using SEModAPIExtensions.API.Plugin.Events;
+using SEModAPIInternal.API.Common;
+using VRage.Plugins;
+using IPlugin = SEModAPIExtensions.API.Plugin.IPlugin;
+
+namespace NoGriefPlugin
 {
-
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Linq;
-    using System.Text;
-    using System.Timers;
-    using System.Reflection;
-    using System.Threading;
-    using System.IO;
-    using System.Xml;
-    using System.Xml.Serialization;
-
-    using Sandbox.Common.ObjectBuilders;
-    using Sandbox.Common.ObjectBuilders.VRageData;
-
-    using SEModAPIExtensions.API.Plugin;
-    using SEModAPIExtensions.API.Plugin.Events;
-    using SEModAPIExtensions.API;
-
-    using SEModAPIInternal.API.Common;
-    using SEModAPIInternal.API.Entity;
-    using SEModAPIInternal.API.Entity.Sector.SectorObject;
-    using SEModAPIInternal.API.Entity.Sector.SectorObject.CubeGrid;
-    using SEModAPIInternal.API.Entity.Sector.SectorObject.CubeGrid.CubeBlock;
-    using SEModAPIInternal.API.Server;
-    using NLog;
-    using SEModAPI.API;
-
-    using VRageMath;
-    using VRage.Common.Utils;
-
-
-    using NoGriefPlugin.Settings;
-    using NoGriefPlugin;
-    using NoGriefPlugin.UtilityClasses;
-    using NoGriefPlugin.Protection;
-    using ChatHandlers;
-    using ProcessHandlers;
-    using Sandbox.ModAPI;
-    using System.Runtime.InteropServices;
-    using SEModAPI.API.Utility;
-    using VRage.ModAPI;
-    using Utility;
-    using VRage.Game.Entity;
-    using Sandbox.Game.Entities;
     public class NoGrief : IPlugin, IChatEventHandler
     {
-
         public static Logger Log;
-        private static string _pluginPath;
-
-        #region Private Fields
-        internal static NoGrief Instance;
-        //private static ControlForm controlForm;
-        private Thread _processThread;
-        private List<Thread> _processThreads;
-        private List<ProcessHandlerBase> _processHandlers;
-        private List<ChatHandlerBase> _chatHandlers;
-        private bool _running = true;
-
-        #endregion
-
-        #region "Properties"
-
-        public static string PluginPath
-        {
-            get
-            {
-                return _pluginPath;
-            }
-            set
-            {
-                _pluginPath = value;
-            }
-        }
-
-        [Category( "Chat Settings" )]
-        [Description( "Chat messages sent from the server will show this name. \r\nNote: This is set separately from SESE and Essentials." )]
-        [Browsable( true )]
-        [ReadOnly( false )]
-        public string ServerChatName
-        {
-            get
-            {
-                return PluginSettings.Instance.ServerChatName;
-            }
-            set
-            {
-                PluginSettings.Instance.ServerChatName = value;
-            }
-        }
-
-        [Category( "Exclusion Zones" )]
-        [Description( "Turn exclusion zones on or off" )]
-        [Browsable( true )]
-        [ReadOnly( false )]
-        public bool ExclusionEnabled
-        {
-            get
-            {
-                return PluginSettings.Instance.ExclusionEnabled;
-            }
-            set
-            {
-                PluginSettings.Instance.ExclusionEnabled = value;
-            }
-        }
-
-        [Category( "Exclusion Zones" )]
-        [Description( "Only allowed players can get near these grids" )]
-        [Browsable( true )]
-        [ReadOnly( false )]
-        public MTObservableCollection<ExclusionItem> ExclusionItems
-        {
-            get
-            {
-                return PluginSettings.Instance.ExclusionItems;
-            }
-            set
-            {
-                PluginSettings.Instance.ExclusionItems = value;
-            }
-        }
-
-        [Category( "Exclusion Zones" )]
-        [Description( "Turn logging on or off" )]
-        [Browsable( true )]
-        [ReadOnly( false )]
-        public bool ExclusionLogging
-        {
-            get
-            {
-                return PluginSettings.Instance.ExclusionLogging;
-            }
-            set
-            {
-                PluginSettings.Instance.ExclusionLogging = value;
-            }
-        }
-
-        [Category( "Protection Zones" )]
-        [Description( "Turn protection zones on or off" )]
-        [Browsable( true )]
-        [ReadOnly( false )]
-        public bool ProtectionZoneEnabled
-        {
-            get
-            {
-                return PluginSettings.Instance.ProtectionZoneEnabled;
-            }
-            set
-            {
-                PluginSettings.Instance.ProtectionZoneEnabled = value;
-            }
-        }
-
-        [Category( "Protection Zones" )]
-        [Description( "Ships in these zones are invulnerable" )]
-        [Browsable( true )]
-        [ReadOnly( false )]
-        public MTObservableCollection<ProtectionItem> ProtectionZoneItems
-        {
-            get
-            {
-                return PluginSettings.Instance.ProtectionZoneItems;
-            }
-            set
-            {
-                PluginSettings.Instance.ProtectionZoneItems = value;
-            }
-        }
-        /*
-        [Category( "Protection" )]
-        [Description( "These ships are invulnerable" )]
-        [Browsable( true )]
-        [ReadOnly( true )]
-        public List<long> ProtectedEntities
-        {
-            get
-            {
-                return PluginSettings.Instance.ProtectedEntities;
-            }
-            set
-            {
-                PluginSettings.Instance.ProtectedEntities = value;
-            }
-        }
-
-        [Category( "Protection" )]
-        [Description( "This setting prevents blocks being added or removed in creative mode" )]
-        [Browsable( true )]
-        [ReadOnly( true )]
-        public bool CreativeProtection
-        {
-            get
-            {
-                return PluginSettings.Instance.CreativeProtection;
-            }
-            set
-            {
-                PluginSettings.Instance.CreativeProtection = value;
-            }
-        }
-        */
-        [Category( "Protection" )]
-        [Description( "This prevents pasting/spawning grids over a certain block count" )]
-        [Browsable( true )]
-        [ReadOnly( false )]
-        public bool CreateProtect
-        {
-            get
-            {
-                return PluginSettings.Instance.MaxCreate;
-            }
-            set
-            {
-                PluginSettings.Instance.MaxCreate = value;
-            }
-        }
-
-        [Category( "Protection" )]
-        [Description( "Maximum size of grids that can be created" )]
-        [Browsable( true )]
-        [ReadOnly( false )]
-        public int MaxCreateSize
-        {
-            get
-            {
-                return PluginSettings.Instance.MaxCreateSize;
-            }
-            set
-            {
-                PluginSettings.Instance.MaxCreateSize = value;
-            }
-        }
-
-        [Category( "Protection" )]
-        [Description( "Sends a global chat message when a grid over the limit is created" )]
-        [Browsable( true )]
-        [ReadOnly( false )]
-        public bool MaxCreateNotify
-        {
-            get
-            {
-                return PluginSettings.Instance.CreateNotify;
-            }
-            set
-            {
-                PluginSettings.Instance.CreateNotify = value;
-            }
-        }
-
-        /*
-        [Category( "Player Protection" )]
-        [Description( "Amount of time, in minutes, after a player logs off before their station is protected" )]
-        [Browsable( true )]
-        [ReadOnly( false )]
-        public int ProtectionTime
-        {
-            get
-            {
-                return PluginSettings.Instance.ProtectionTime;
-            }
-            set
-            {
-                PluginSettings.Instance.ProtectionTime = value;
-            }
-        }
-
-        [Category( "Player Protection" )]
-        [Description( "Grids with more than this number of blocks total will not be protected" )]
-        [Browsable( true )]
-        [ReadOnly( false )]
-        public int MaxBlockCount
-        {
-            get
-            {
-                return PluginSettings.Instance.MaxBlockCount;
-            }
-            set
-            {
-                PluginSettings.Instance.MaxBlockCount = value;
-            }
-        }
-
-        [Category( "Player Protection" )]
-        [Description( "Maximum number of grids that can be included in the protection zone" )]
-        [Browsable( true )]
-        [ReadOnly( false )]
-        public int MaxSubgridCount
-        {
-            get
-            {
-                return PluginSettings.Instance.MaxSubgridCount;
-            }
-            set
-            {
-                PluginSettings.Instance.MaxSubgridCount = value;
-            }
-        }
-
-        [Category( "Player Protection" )]
-        [Description( "Radius, in meters, of the protection zone" )]
-        [Browsable( true )]
-        [ReadOnly( false )]
-        public int ProtectionRadius
-        {
-            get
-            {
-                return PluginSettings.Instance.ProtectionRadius;
-            }
-            set
-            {
-                PluginSettings.Instance.ProtectionRadius = value;
-            }
-        }
-        */
-        #endregion
 
         #region "Methods"
 
-        public void OnChatReceived( ChatManager.ChatEvent obj )
+        public void OnChatReceived(ChatManager.ChatEvent obj)
         {
-            if ( obj.SourceUserId == 0 )
+            if (obj.SourceUserId == 0)
                 return;
 
 
-            if ( obj.Message[0] == '/' )
+            if (obj.Message[0] == '/')
             {
-
             }
-            return;
         }
+
         #endregion
 
         #region Constructors and Initializers
 
-        private void DoInit( string path )
+        private void DoInit(string path)
         {
             Instance = this;
             //controlForm.Text = "Testing";
-            _pluginPath = path;
+            PluginPath = path;
 
             // Load our settings
-            PluginSettings.Instance.Load( );
+            PluginSettings.Instance.Load();
 
             // Setup process handlers
-            _processHandlers = new List<ProcessHandlerBase>
-            {
-                new ProcessExclusionZone( ),
-                new ProcessProtectionZone()
-            };
+            _processHandlers = new List<ProcessHandlerBase>();
 
             // Setup chat handlers
-            _chatHandlers = new List<ChatHandlerBase>
-            {
+            _chatHandlers = new List<ChatHandlerBase>();
 
-            };
-
-            _processThreads = new List<Thread>( );
-            _processThread = new Thread( PluginProcessing );
-            _processThread.Start( );
-            DamageHandler.Init( );
-            Protection.Protection.Init( );
-            Log.Info( "Plugin '{0}' initialized. (Version: {1}  ID: {2})", Name, Version, Id );
+            _processThreads = new List<Thread>();
+            _processThread = new Thread(PluginProcessing);
+            _processThread.Start();
+            DamageHandler.Init();
+            Log.Info("Plugin '{0}' initialized. (Version: {1}  ID: {2})", Name, Version, Id);
         }
 
         #endregion
 
         #region Processing Loop
-        private void PluginProcessing( )
+
+        private void PluginProcessing()
         {
             try
             {
-                foreach ( ProcessHandlerBase handler in _processHandlers )
+                foreach (ProcessHandlerBase handler in _processHandlers)
                 {
                     ProcessHandlerBase currentHandler = handler;
-                    Thread thread = new Thread( ( ) =>
-                    {
-                        while ( _running )
-                        {
-                            if ( currentHandler.CanProcess( ) )
-                            {
-                                try
-                                {
-                                    currentHandler.Handle( );
-                                }
-                                catch ( Exception ex )
-                                {
-                                    Log.Warn( "Handler Problems: {0} - {1}", currentHandler.GetUpdateResolution( ), ex );
-                                }
+                    var thread = new Thread(() =>
+                                            {
+                                                while (_running)
+                                                {
+                                                    if (currentHandler.CanProcess())
+                                                    {
+                                                        try
+                                                        {
+                                                            currentHandler.Handle();
+                                                        }
+                                                        catch (Exception ex)
+                                                        {
+                                                            Log.Warn("Handler Problems: {0} - {1}", currentHandler.GetUpdateResolution(), ex);
+                                                        }
 
-                            // Let's make sure LastUpdate is set to now otherwise we may start processing too quickly
-                            currentHandler.LastUpdate = DateTime.Now;
-                            }
+                                                        // Let's make sure LastUpdate is set to now otherwise we may start processing too quickly
+                                                        currentHandler.LastUpdate = DateTime.Now;
+                                                    }
 
-                            Thread.Sleep( 100 );
-                        }
-                    } );
+                                                    Thread.Sleep(100);
+                                                }
+                                            });
 
-                    _processThreads.Add( thread );
-                    thread.Start( );
+                    _processThreads.Add(thread);
+                    thread.Start();
                 }
 
-                foreach ( Thread thread in _processThreads )
-                    thread.Join( );
-                        
+                foreach (Thread thread in _processThreads)
+                    thread.Join();
             }
-            catch ( ThreadAbortException ex )
+            catch (ThreadAbortException ex)
             {
-                Log.Trace( ex );
+                Log.Trace(ex);
             }
-            catch ( Exception ex )
+            catch (Exception ex)
             {
-                Log.Error( ex );
+                Log.Error(ex);
             }
             finally
             {
@@ -423,373 +118,400 @@
                 // MyAPIGateway.Entities.OnEntityRemove -= OnEntityRemove;
             }
         }
+
+        #endregion
+
+        public void OnSectorSaved(object state)
+        {
+            foreach (ProcessHandlerBase handler in _processHandlers)
+                handler.OnSectorSaved();
+        }
+
+        #region Private Fields
+
+        internal static NoGrief Instance;
+        //private static ControlForm controlForm;
+        private Thread _processThread;
+        private List<Thread> _processThreads;
+        private List<ProcessHandlerBase> _processHandlers;
+        private List<ChatHandlerBase> _chatHandlers;
+        private readonly bool _running = true;
+
+        #endregion
+
+        #region "Properties"
+
+        public static string PluginPath { get; set; }
+
+        [Category("Chat Settings")]
+        [Description("Chat messages sent from the server will show this name. \r\nNote: This is set separately from SESE and Essentials.")]
+        [Browsable(true)]
+        [ReadOnly(false)]
+        public string ServerChatName
+        {
+            get { return PluginSettings.Instance.ServerChatName; }
+            set { PluginSettings.Instance.ServerChatName = value; }
+        }
+
         #endregion
 
         #region IPlugin Members
-        public void Init( )
+
+        public void Init()
         {
             //register object builder assembly
-            string path = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "SpaceEngineers.ObjectBuilders.DLL" );
-            VRage.Plugins.MyPlugins.RegisterGameObjectBuildersAssemblyFile( path );
+            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SpaceEngineers.ObjectBuilders.DLL");
+            MyPlugins.RegisterGameObjectBuildersAssemblyFile(path);
 
-            Log.Debug( "Initializing NoGrief plugin at path {0}\\", Path.GetDirectoryName( Assembly.GetExecutingAssembly( ).Location ) );
-            DoInit( Path.GetDirectoryName( Assembly.GetExecutingAssembly( ).Location ) + "\\" );
+            Log.Debug("Initializing NoGrief plugin at path {0}\\", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+            DoInit(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\");
         }
 
-        public void InitWithPath( String modPath )
+        public void InitWithPath(string modPath)
         {
             //register object builder assembly
-            string path = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "SpaceEngineers.ObjectBuilders.DLL" );
-            VRage.Plugins.MyPlugins.RegisterGameObjectBuildersAssemblyFile( path );
+            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SpaceEngineers.ObjectBuilders.DLL");
+            MyPlugins.RegisterGameObjectBuildersAssemblyFile(path);
 
-            Log.Debug( "Initializing NoGrief plugin at path {0}\\", Path.GetDirectoryName( modPath ) );
-            DoInit( Path.GetDirectoryName( modPath ) + "\\" );
+            Log.Debug("Initializing NoGrief plugin at path {0}\\", Path.GetDirectoryName(modPath));
+            DoInit(Path.GetDirectoryName(modPath) + "\\");
         }
 
-        public void Shutdown( )
+        public void Shutdown()
         {
-            Log.Info( "Shutting down plugin: {0} - {1}", Name, Version );
+            Log.Info("Shutting down plugin: {0} - {1}", Name, Version);
 
-            foreach ( Thread thread in _processThreads )
-                thread.Abort( );
+            foreach (Thread thread in _processThreads)
+                thread.Abort();
 
-            _processThread.Abort( );
+            _processThread.Abort();
         }
 
-        public void Update( )
+        public void Update()
         {
-
         }
 
         #endregion
 
         #region IChatEventHandler Members
 
-        public void OnMessageReceived( )
+        public void OnMessageReceived()
         {
-
         }
 
 
-        public void HandleChatMessage( ulong steamId, string message )
+        public void HandleChatMessage(ulong steamId, string message)
         {
             // Parse chat message
             ulong remoteUserId = steamId;
-            List<string> commandParts = CommandParser.GetCommandParts( message );
-            
+            List<string> commandParts = CommandParser.GetCommandParts(message);
+
             // See if we have any valid handlers
             bool handled = false;
-            foreach ( ChatHandlerBase chatHandler in _chatHandlers )
+            foreach (ChatHandlerBase chatHandler in _chatHandlers)
             {
                 int commandCount = 0;
-                if ( remoteUserId == 0 && !chatHandler.AllowedInConsole( ) )
+                if (remoteUserId == 0 && !chatHandler.AllowedInConsole())
                     continue;
 
-                if ( chatHandler.CanHandle( remoteUserId, commandParts.ToArray( ), ref commandCount ) )
+                if (chatHandler.CanHandle(remoteUserId, commandParts.ToArray(), ref commandCount))
                 {
                     try
                     {
-                        chatHandler.HandleCommand( remoteUserId, commandParts.Skip( commandCount ).ToArray( ) );
+                        chatHandler.HandleCommand(remoteUserId, commandParts.Skip(commandCount).ToArray());
                     }
-                    catch ( Exception ex )
+                    catch (Exception ex)
                     {
-                        Log.Info( string.Format( "ChatHandler Error: {0}", ex ) );
+                        Log.Info(string.Format("ChatHandler Error: {0}", ex));
                     }
 
                     handled = true;
                 }
             }
 
-            if ( !handled )
+            if (!handled)
             {
-                DisplayAvailableCommands( remoteUserId, message );
+                DisplayAvailableCommands(remoteUserId, message);
             }
         }
 
         /// <summary>
-        /// This function displays available help for all the functionality of this plugin
+        ///     This function displays available help for all the functionality of this plugin
         /// </summary>
         /// <param name="remoteUserId"></param>
         /// <param name="commandParts"></param>
-        private void HandleHelpCommand( ulong remoteUserId, IReadOnlyCollection<string> commandParts )
+        private void HandleHelpCommand(ulong remoteUserId, IReadOnlyCollection<string> commandParts)
         {
-            if ( commandParts.Count == 1 )
+            if (commandParts.Count == 1)
             {
-                List<string> commands = new List<string>( );
-                foreach ( ChatHandlerBase handler in _chatHandlers )
+                var commands = new List<string>();
+                foreach (ChatHandlerBase handler in _chatHandlers)
                 {
                     // We should replace this to just have the handler return a string[] of base commands
-                    if ( handler.GetMultipleCommandText( ).Length < 1 )
+                    if (handler.GetMultipleCommandText().Length < 1)
                     {
-                        string commandBase = handler.GetCommandText( ).Split( new[ ] { " " }, StringSplitOptions.RemoveEmptyEntries ).First( );
-                        if ( !commands.Contains( commandBase ) && (!handler.IsClientOnly( )) && (!handler.IsAdminCommand( ) || (handler.IsAdminCommand( ) && (PlayerManager.Instance.IsUserAdmin( remoteUserId ) || remoteUserId == 0))) )
+                        string commandBase = handler.GetCommandText().Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries).First();
+                        if (!commands.Contains(commandBase) && !handler.IsClientOnly() && (!handler.IsAdminCommand() || (handler.IsAdminCommand() && (PlayerManager.Instance.IsUserAdmin(remoteUserId) || remoteUserId == 0))))
                         {
-                            commands.Add( commandBase );
+                            commands.Add(commandBase);
                         }
                     }
                     else
                     {
-                        foreach ( string cmd in handler.GetMultipleCommandText( ) )
+                        foreach (string cmd in handler.GetMultipleCommandText())
                         {
-                            string commandBase = cmd.Split( new[ ] { " " }, StringSplitOptions.RemoveEmptyEntries ).First( );
-                            if ( !commands.Contains( commandBase ) && (!handler.IsClientOnly( )) && (!handler.IsAdminCommand( ) || (handler.IsAdminCommand( ) && (PlayerManager.Instance.IsUserAdmin( remoteUserId ) || remoteUserId == 0))) )
+                            string commandBase = cmd.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries).First();
+                            if (!commands.Contains(commandBase) && !handler.IsClientOnly() && (!handler.IsAdminCommand() || (handler.IsAdminCommand() && (PlayerManager.Instance.IsUserAdmin(remoteUserId) || remoteUserId == 0))))
                             {
-                                commands.Add( commandBase );
+                                commands.Add(commandBase);
                             }
                         }
                     }
                 }
 
-                string commandList = string.Join( ", ", commands );
-                string info = string.Format( "NoGrief Plugin v{0}.  Available Commands: {1}", Version, commandList );
-                Communication.SendPrivateInformation( remoteUserId, info );
+                string commandList = string.Join(", ", commands);
+                string info = string.Format("NoGrief Plugin v{0}.  Available Commands: {1}", Version, commandList);
+                Communication.SendPrivateInformation(remoteUserId, info);
             }
             else
             {
-                string helpTarget = string.Join( " ", commandParts.Skip( 1 ).ToArray( ) );
+                string helpTarget = string.Join(" ", commandParts.Skip(1).ToArray());
                 bool found = false;
-                foreach ( ChatHandlerBase handler in _chatHandlers )
+                foreach (ChatHandlerBase handler in _chatHandlers)
                 {
                     // Again, we should get handler to just return string[] of command Text
-                    if ( handler.GetMultipleCommandText( ).Length < 1 )
+                    if (handler.GetMultipleCommandText().Length < 1)
                     {
-                        if ( String.Equals( handler.GetCommandText( ), helpTarget, StringComparison.CurrentCultureIgnoreCase ) )
+                        if (string.Equals(handler.GetCommandText(), helpTarget, StringComparison.CurrentCultureIgnoreCase))
                         {
-                            Communication.SendPrivateInformation( remoteUserId, handler.GetHelp( ) );
+                            Communication.SendPrivateInformation(remoteUserId, handler.GetHelp());
                             found = true;
                         }
                     }
                     else
                     {
-                        foreach ( string cmd in handler.GetMultipleCommandText( ) )
+                        foreach (string cmd in handler.GetMultipleCommandText())
                         {
-                            if ( String.Equals( cmd, helpTarget, StringComparison.CurrentCultureIgnoreCase ) )
+                            if (string.Equals(cmd, helpTarget, StringComparison.CurrentCultureIgnoreCase))
                             {
-                                Communication.SendPrivateInformation( remoteUserId, handler.GetHelp( ) );
+                                Communication.SendPrivateInformation(remoteUserId, handler.GetHelp());
                                 found = true;
                             }
                         }
                     }
                 }
 
-                if ( !found )
+                if (!found)
                 {
-                    List<string> helpTopics = new List<string>( );
+                    var helpTopics = new List<string>();
 
-                    foreach ( ChatHandlerBase handler in _chatHandlers )
+                    foreach (ChatHandlerBase handler in _chatHandlers)
                     {
                         // Again, cleanup to one function
-                        string[ ] multipleCommandText = handler.GetMultipleCommandText( );
-                        if ( multipleCommandText.Length == 0 )
+                        string[] multipleCommandText = handler.GetMultipleCommandText();
+                        if (multipleCommandText.Length == 0)
                         {
-                            if ( handler.GetCommandText( ).ToLower( ).StartsWith( helpTarget.ToLower( ) ) && ((!handler.IsAdminCommand( )) || (handler.IsAdminCommand( ) && (PlayerManager.Instance.IsUserAdmin( remoteUserId ) || remoteUserId == 0))) )
+                            if (handler.GetCommandText().ToLower().StartsWith(helpTarget.ToLower()) && (!handler.IsAdminCommand() || (handler.IsAdminCommand() && (PlayerManager.Instance.IsUserAdmin(remoteUserId) || remoteUserId == 0))))
                             {
-                                helpTopics.Add( handler.GetCommandText( ).ToLower( ).Replace( helpTarget.ToLower( ), string.Empty ) );
+                                helpTopics.Add(handler.GetCommandText().ToLower().Replace(helpTarget.ToLower(), string.Empty));
                             }
                         }
                         else
                         {
-                            foreach ( string cmd in multipleCommandText )
+                            foreach (string cmd in multipleCommandText)
                             {
-                                if ( cmd.ToLower( ).StartsWith( helpTarget.ToLower( ) ) && ((!handler.IsAdminCommand( )) || (handler.IsAdminCommand( ) && (PlayerManager.Instance.IsUserAdmin( remoteUserId ) || remoteUserId == 0))) )
+                                if (cmd.ToLower().StartsWith(helpTarget.ToLower()) && (!handler.IsAdminCommand() || (handler.IsAdminCommand() && (PlayerManager.Instance.IsUserAdmin(remoteUserId) || remoteUserId == 0))))
                                 {
-                                    helpTopics.Add( cmd.ToLower( ).Replace( helpTarget.ToLower( ), string.Empty ) );
+                                    helpTopics.Add(cmd.ToLower().Replace(helpTarget.ToLower(), string.Empty));
                                 }
                             }
                         }
                     }
 
-                    if ( helpTopics.Any( ) )
+                    if (helpTopics.Any())
                     {
-                        Communication.SendPrivateInformation( remoteUserId, string.Format( "Help topics for command '{0}': {1}", helpTarget.ToLower( ), string.Join( ",", helpTopics.ToArray( ) ) ) );
+                        Communication.SendPrivateInformation(remoteUserId, string.Format("Help topics for command '{0}': {1}", helpTarget.ToLower(), string.Join(",", helpTopics.ToArray())));
                         found = true;
                     }
                 }
 
-                if ( !found )
-                    Communication.SendPrivateInformation( remoteUserId, "Unknown command" );
+                if (!found)
+                    Communication.SendPrivateInformation(remoteUserId, "Unknown command");
             }
         }
 
         /// <summary>
-        /// This function displays available help for all the functionality of this plugin in a dialog window
+        ///     This function displays available help for all the functionality of this plugin in a dialog window
         /// </summary>
         /// <param name="remoteUserId"></param>
         /// <param name="commandParts"></param>
-        private void HandleHelpDialog( ulong remoteUserId, IReadOnlyCollection<string> commandParts )
+        private void HandleHelpDialog(ulong remoteUserId, IReadOnlyCollection<string> commandParts)
         {
-            if ( commandParts.Count == 2 )
+            if (commandParts.Count == 2)
             {
-                List<string> commands = new List<string>( );
-                foreach ( ChatHandlerBase handler in _chatHandlers )
+                var commands = new List<string>();
+                foreach (ChatHandlerBase handler in _chatHandlers)
                 {
                     // We should replace this to just have the handler return a string[] of base commands
-                    if ( handler.GetMultipleCommandText( ).Length < 1 )
+                    if (handler.GetMultipleCommandText().Length < 1)
                     {
-                        string commandBase = handler.GetCommandText( ).Split( new[ ] { " " }, StringSplitOptions.RemoveEmptyEntries ).First( );
-                        if ( !commands.Contains( commandBase ) && (!handler.IsClientOnly( )) && (!handler.IsAdminCommand( ) || (handler.IsAdminCommand( ) && (PlayerManager.Instance.IsUserAdmin( remoteUserId ) || remoteUserId == 0))) )
+                        string commandBase = handler.GetCommandText().Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries).First();
+                        if (!commands.Contains(commandBase) && !handler.IsClientOnly() && (!handler.IsAdminCommand() || (handler.IsAdminCommand() && (PlayerManager.Instance.IsUserAdmin(remoteUserId) || remoteUserId == 0))))
                         {
-                            commands.Add( commandBase );
+                            commands.Add(commandBase);
                         }
                     }
                     else
                     {
-                        foreach ( string cmd in handler.GetMultipleCommandText( ) )
+                        foreach (string cmd in handler.GetMultipleCommandText())
                         {
-                            string commandBase = cmd.Split( new[ ] { " " }, StringSplitOptions.RemoveEmptyEntries ).First( );
-                            if ( !commands.Contains( commandBase ) && (!handler.IsClientOnly( )) && (!handler.IsAdminCommand( ) || (handler.IsAdminCommand( ) && (PlayerManager.Instance.IsUserAdmin( remoteUserId ) || remoteUserId == 0))) )
+                            string commandBase = cmd.Split(new[] {" "}, StringSplitOptions.RemoveEmptyEntries).First();
+                            if (!commands.Contains(commandBase) && !handler.IsClientOnly() && (!handler.IsAdminCommand() || (handler.IsAdminCommand() && (PlayerManager.Instance.IsUserAdmin(remoteUserId) || remoteUserId == 0))))
                             {
-                                commands.Add( commandBase );
+                                commands.Add(commandBase);
                             }
                         }
                     }
                 }
 
-                string commandList = string.Join( ", ", commands );
-                commandList = commandList.Replace( ", ", "|" );
+                string commandList = string.Join(", ", commands);
+                commandList = commandList.Replace(", ", "|");
                 //take our list of commands, put line breaks between all the entries and stuff it into a dialog winow
 
-                Communication.DisplayDialog( remoteUserId, "Help", "Available commands", commandList + "||Type '/help dialog <command>' for more info.", "close" );
+                Communication.DisplayDialog(remoteUserId, "Help", "Available commands", commandList + "||Type '/help dialog <command>' for more info.", "close");
             }
             else
             {
-                string helpTarget = string.Join( " ", commandParts.Skip( 2 ).ToArray( ) );
+                string helpTarget = string.Join(" ", commandParts.Skip(2).ToArray());
                 bool found = false;
-                foreach ( ChatHandlerBase handler in _chatHandlers )
+                foreach (ChatHandlerBase handler in _chatHandlers)
                 {
                     // Again, we should get handler to just return string[] of command Text
-                    if ( handler.GetMultipleCommandText( ).Length < 1 )
+                    if (handler.GetMultipleCommandText().Length < 1)
                     {
-                        if ( String.Equals( handler.GetCommandText( ), helpTarget, StringComparison.CurrentCultureIgnoreCase ) )
+                        if (string.Equals(handler.GetCommandText(), helpTarget, StringComparison.CurrentCultureIgnoreCase))
                         {
-                            Communication.DisplayDialog( remoteUserId, handler.GetHelpDialog( ) );
+                            Communication.DisplayDialog(remoteUserId, handler.GetHelpDialog());
                             found = true;
                         }
                     }
                     else
                     {
-                        foreach ( string cmd in handler.GetMultipleCommandText( ) )
+                        foreach (string cmd in handler.GetMultipleCommandText())
                         {
-                            if ( String.Equals( cmd, helpTarget, StringComparison.CurrentCultureIgnoreCase ) )
+                            if (string.Equals(cmd, helpTarget, StringComparison.CurrentCultureIgnoreCase))
                             {
-                                Communication.DisplayDialog( remoteUserId, handler.GetHelpDialog( ) );
+                                Communication.DisplayDialog(remoteUserId, handler.GetHelpDialog());
                                 found = true;
                             }
                         }
                     }
                 }
 
-                if ( !found )
+                if (!found)
                 {
-                    List<string> helpTopics = new List<string>( );
+                    var helpTopics = new List<string>();
 
-                    foreach ( ChatHandlerBase handler in _chatHandlers )
+                    foreach (ChatHandlerBase handler in _chatHandlers)
                     {
                         // Again, cleanup to one function
-                        string[ ] multipleCommandText = handler.GetMultipleCommandText( );
-                        if ( multipleCommandText.Length == 0 )
+                        string[] multipleCommandText = handler.GetMultipleCommandText();
+                        if (multipleCommandText.Length == 0)
                         {
-                            if ( handler.GetCommandText( ).ToLower( ).StartsWith( helpTarget.ToLower( ) ) && ((!handler.IsAdminCommand( )) || (handler.IsAdminCommand( ) && (PlayerManager.Instance.IsUserAdmin( remoteUserId ) || remoteUserId == 0))) )
+                            if (handler.GetCommandText().ToLower().StartsWith(helpTarget.ToLower()) && (!handler.IsAdminCommand() || (handler.IsAdminCommand() && (PlayerManager.Instance.IsUserAdmin(remoteUserId) || remoteUserId == 0))))
                             {
-                                helpTopics.Add( handler.GetCommandText( ).ToLower( ).Replace( helpTarget.ToLower( ), string.Empty ) );
+                                helpTopics.Add(handler.GetCommandText().ToLower().Replace(helpTarget.ToLower(), string.Empty));
                             }
                         }
                         else
                         {
-                            foreach ( string cmd in multipleCommandText )
+                            foreach (string cmd in multipleCommandText)
                             {
-                                if ( cmd.ToLower( ).StartsWith( helpTarget.ToLower( ) ) && ((!handler.IsAdminCommand( )) || (handler.IsAdminCommand( ) && (PlayerManager.Instance.IsUserAdmin( remoteUserId ) || remoteUserId == 0))) )
+                                if (cmd.ToLower().StartsWith(helpTarget.ToLower()) && (!handler.IsAdminCommand() || (handler.IsAdminCommand() && (PlayerManager.Instance.IsUserAdmin(remoteUserId) || remoteUserId == 0))))
                                 {
-                                    helpTopics.Add( cmd.ToLower( ).Replace( helpTarget.ToLower( ), string.Empty ) );
+                                    helpTopics.Add(cmd.ToLower().Replace(helpTarget.ToLower(), string.Empty));
                                 }
                             }
                         }
                     }
 
-                    if ( helpTopics.Any( ) )
+                    if (helpTopics.Any())
                     {
-                        Communication.SendPrivateInformation( remoteUserId, string.Format( "Help topics for command '{0}': {1}", helpTarget.ToLower( ), string.Join( ",", helpTopics.ToArray( ) ) ) );
+                        Communication.SendPrivateInformation(remoteUserId, string.Format("Help topics for command '{0}': {1}", helpTarget.ToLower(), string.Join(",", helpTopics.ToArray())));
                         found = true;
                     }
                 }
 
-                if ( !found )
-                    Communication.SendPrivateInformation( remoteUserId, "Unknown command" );
+                if (!found)
+                    Communication.SendPrivateInformation(remoteUserId, "Unknown command");
             }
         }
 
         /// <summary>
-        /// Displays the available commands for the command entered
+        ///     Displays the available commands for the command entered
         /// </summary>
         /// <param name="remoteUserId"></param>
         /// <param name="recvMessage"></param>
-        private void DisplayAvailableCommands( ulong remoteUserId, string recvMessage )
+        private void DisplayAvailableCommands(ulong remoteUserId, string recvMessage)
         {
-            string message = recvMessage.ToLower( ).Trim( );
-            List<string> availableCommands = new List<string>( );
-            foreach ( ChatHandlerBase chatHandler in _chatHandlers )
+            string message = recvMessage.ToLower().Trim();
+            var availableCommands = new List<string>();
+            foreach (ChatHandlerBase chatHandler in _chatHandlers)
             {
                 // Cleanup to one function
-                if ( chatHandler.GetMultipleCommandText( ).Length < 1 )
+                if (chatHandler.GetMultipleCommandText().Length < 1)
                 {
-                    string command = chatHandler.GetCommandText( );
-                    if ( command.StartsWith( message ) )
+                    string command = chatHandler.GetCommandText();
+                    if (command.StartsWith(message))
                     {
-                        string[ ] cmdPart = command.Replace( message, string.Empty ).Trim( ).Split( new[ ] { ' ' } );
+                        string[] cmdPart = command.Replace(message, string.Empty).Trim().Split(' ');
 
-                        if ( !availableCommands.Contains( cmdPart[0] ) )
-                            availableCommands.Add( cmdPart[0] );
+                        if (!availableCommands.Contains(cmdPart[0]))
+                            availableCommands.Add(cmdPart[0]);
                     }
                 }
                 else
                 {
-                    foreach ( string command in chatHandler.GetMultipleCommandText( ) )
+                    foreach (string command in chatHandler.GetMultipleCommandText())
                     {
-                        if ( command.StartsWith( message ) )
+                        if (command.StartsWith(message))
                         {
-                            string[ ] cmdPart = command.Replace( message, string.Empty ).Trim( ).Split( new[ ] { ' ' } );
+                            string[] cmdPart = command.Replace(message, string.Empty).Trim().Split(' ');
 
-                            if ( !availableCommands.Contains( cmdPart[0] ) )
-                                availableCommands.Add( cmdPart[0] );
+                            if (!availableCommands.Contains(cmdPart[0]))
+                                availableCommands.Add(cmdPart[0]);
                         }
                     }
                 }
             }
 
-            if ( availableCommands.Any( ) )
+            if (availableCommands.Any())
             {
-                Communication.SendPrivateInformation( remoteUserId, string.Format( "Available subcommands for '{0}' command: {1}", message, string.Join( ", ", availableCommands.ToArray( ) ) ) );
+                Communication.SendPrivateInformation(remoteUserId, string.Format("Available subcommands for '{0}' command: {1}", message, string.Join(", ", availableCommands.ToArray())));
             }
         }
 
-        public void OnChatSent( ChatManager.ChatEvent obj )
+        public void OnChatSent(ChatManager.ChatEvent obj)
         {
-
         }
 
         #endregion
-        
+
         #region IPlayerEventHandler Members
 
-        public void OnPlayerJoined( ulong remoteUserId )
+        public void OnPlayerJoined(ulong remoteUserId)
         {
-            foreach ( ProcessHandlerBase handler in _processHandlers )
-                handler.OnPlayerJoined( remoteUserId );
+            foreach (ProcessHandlerBase handler in _processHandlers)
+                handler.OnPlayerJoined(remoteUserId);
         }
 
-        public void OnPlayerLeft( ulong remoteUserId )
+        public void OnPlayerLeft(ulong remoteUserId)
         {
-            foreach ( ProcessHandlerBase handler in _processHandlers )
-                handler.OnPlayerLeft( remoteUserId );
+            foreach (ProcessHandlerBase handler in _processHandlers)
+                handler.OnPlayerLeft(remoteUserId);
         }
 
         #endregion
-
-        public void OnSectorSaved( object state )
-        {
-            foreach ( ProcessHandlerBase handler in _processHandlers )
-                handler.OnSectorSaved( );
-        }
 
         #region IPlugin Members
 
@@ -797,28 +519,21 @@
         {
             get
             {
-                GuidAttribute guidAttr = (GuidAttribute)typeof( NoGrief ).Assembly.GetCustomAttributes( typeof( GuidAttribute ), true )[0];
-                return new Guid( guidAttr.Value );
+                var guidAttr = (GuidAttribute)typeof(NoGrief).Assembly.GetCustomAttributes(typeof(GuidAttribute), true)[0];
+                return new Guid(guidAttr.Value);
             }
         }
 
         public string Name
         {
-            get
-            {
-                return "NoGrief Plugin";
-            }
+            get { return "NoGrief Plugin"; }
         }
 
         public Version Version
         {
-            get
-            {
-                return typeof( NoGrief ).Assembly.GetName( ).Version;
-            }
+            get { return typeof(NoGrief).Assembly.GetName().Version; }
         }
 
         #endregion
     }
 }
-
