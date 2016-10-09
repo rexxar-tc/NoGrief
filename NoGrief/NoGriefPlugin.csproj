@@ -62,6 +62,7 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>AssemblyFileVersion.cs</LastGenOutput>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyFileVersion.cs">
@@ -71,56 +72,56 @@
     </Compile>
     <Compile Include="ChatHandlers\ChatHandlerBase.cs" />
     <Compile Include="NoGrief.cs" />
-    <Compile Include="ProcessHandlers\ProcessProtectionZone.cs" />
-    <Compile Include="ProcessHandlers\ProcessExclusionZone.cs" />
-    <Compile Include="Protection\Protection.cs" />
-    <Compile Include="Settings\SettingsProtectionItem.cs" />
-    <Compile Include="SyncHandlers\SyncGridHandler.cs" />
-    <Compile Include="SyncHandlers\SyncHandlerBase.cs" />
-    <Compile Include="Utility\Communication.cs" />
     <Compile Include="Protection\DamageHandler.cs" />
     <Compile Include="ProcessHandlers\ProcessHandlerBase.cs" />
     <Compile Include="Settings\PluginSettings.cs" />
     <Compile Include="Settings\SettingsExclusionItem.cs" />
     <Compile Include="UtilityClasses\MTObservableCollection.cs" />
-    <Compile Include="UtilityClasses\OrientedBoundingBox.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UtilityClasses\SerializeableDictionary.cs" />
-    <Compile Include="Settings\SettingsDialogItem.cs" />
     <Compile Include="UtilityClasses\UIEditors.cs" />
+    <Compile Include="Utility\Communication.cs" />
     <Compile Include="Utility\Extensions.cs" />
     <Compile Include="Utility\MathUtility.cs" />
     <Compile Include="Utility\Wrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\SEServerExtender\SEServerExtender\bin\x64\Release\NLog.dll</HintPath>
+      <HintPath>packages\NLog.4.3.9\lib\net45\NLog.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Sandbox.Common">
-      <HintPath>..\Libraries\Sandbox.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="Sandbox.Game, Version=0.1.5863.32406, Culture=neutral, processorArchitecture=AMD64">
+    <Reference Include="Sandbox.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Libraries\Sandbox.Game.dll</HintPath>
+      <HintPath>..\..\SEServerExtender\GameLibraries\Sandbox.Common.dll</HintPath>
     </Reference>
-    <Reference Include="SEComm, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+    <Reference Include="Sandbox.Game, Version=0.1.6123.29889, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\SEServerExtender\SEServerExtender\bin\x64\Debug\SEComm.dll</HintPath>
+      <HintPath>..\..\SEServerExtender\GameLibraries\Sandbox.Game.dll</HintPath>
+    </Reference>
+    <Reference Include="SEComm">
+      <HintPath>..\..\SEServerExtender\bin\x64\DedicatedServer64\SEComm.dll</HintPath>
     </Reference>
     <Reference Include="SEModAPI">
-      <HintPath>..\..\SEServerExtender\SEServerExtender\bin\x64\Debug\SEModAPI.dll</HintPath>
+      <HintPath>..\..\SEServerExtender\bin\x64\DedicatedServer64\SEModAPI.dll</HintPath>
     </Reference>
     <Reference Include="SEModAPIExtensions">
-      <HintPath>..\..\SEServerExtender\SEServerExtender\bin\x64\Debug\SEModAPIExtensions.dll</HintPath>
+      <HintPath>..\..\SEServerExtender\bin\x64\DedicatedServer64\SEModAPIExtensions.dll</HintPath>
     </Reference>
     <Reference Include="SEModAPIInternal">
-      <HintPath>..\..\SEServerExtender\SEServerExtender\bin\x64\Debug\SEModAPIInternal.dll</HintPath>
+      <HintPath>..\..\SEServerExtender\bin\x64\DedicatedServer64\SEModAPIInternal.dll</HintPath>
     </Reference>
-    <Reference Include="SpaceEngineers.ObjectBuilders">
+    <Reference Include="SEServerExtender">
+      <HintPath>..\..\SEServerExtender\bin\x64\DedicatedServer64\SEServerExtender.exe</HintPath>
+    </Reference>
+    <Reference Include="SpaceEngineers.Game, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\SEServerExtender\GameLibraries\SpaceEngineers.Game.dll</HintPath>
+    </Reference>
+    <Reference Include="SpaceEngineers.ObjectBuilders, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\SEServerExtender\GameLibraries\SpaceEngineers.ObjectBuilders.dll</HintPath>
     </Reference>
-    <Reference Include="SpaceEngineers.ObjectBuilders.XmlSerializers">
+    <Reference Include="SpaceEngineers.ObjectBuilders.XmlSerializers, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\SEServerExtender\GameLibraries\SpaceEngineers.ObjectBuilders.XmlSerializers.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -130,21 +131,43 @@
     <Reference Include="System.XML" />
     <Reference Include="VRage, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\SEServerExtender\SEServerExtender\bin\x64\Debug\VRage.dll</HintPath>
+      <HintPath>..\..\SEServerExtender\GameLibraries\VRage.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage.Dedicated, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\SEServerExtender\GameLibraries\VRage.Dedicated.dll</HintPath>
     </Reference>
     <Reference Include="VRage.Game, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\SEServerExtender\SEServerExtender\bin\x64\Release\VRage.Game.dll</HintPath>
+      <HintPath>..\..\SEServerExtender\GameLibraries\VRage.Game.dll</HintPath>
     </Reference>
     <Reference Include="VRage.Game.XmlSerializers, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\SEServerExtender\GameLibraries\VRage.Game.XmlSerializers.dll</HintPath>
     </Reference>
-    <Reference Include="VRage.Library">
-      <HintPath>..\Libraries\VRage.Library.dll</HintPath>
+    <Reference Include="VRage.Input, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\SEServerExtender\GameLibraries\VRage.Input.dll</HintPath>
     </Reference>
-    <Reference Include="VRage.Math">
-      <HintPath>..\Libraries\VRage.Math.dll</HintPath>
+    <Reference Include="VRage.Library, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\SEServerExtender\GameLibraries\VRage.Library.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage.Math, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\SEServerExtender\GameLibraries\VRage.Math.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage.Native, Version=0.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\SEServerExtender\GameLibraries\VRage.Native.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage.Render, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\SEServerExtender\GameLibraries\VRage.Render.dll</HintPath>
+    </Reference>
+    <Reference Include="VRage.Render11, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\SEServerExtender\GameLibraries\VRage.Render11.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
