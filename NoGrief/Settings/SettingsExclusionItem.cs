@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Xml.Serialization;
+using VRage.Collections;
 
 namespace NoGriefPlugin.Settings
 {
     [Serializable]
-    public class ExclusionItem
+    public class SettingsExclusionItem
     {
         private bool allowAdmins;
         private List<long> allowedEntities;
@@ -61,7 +64,7 @@ namespace NoGriefPlugin.Settings
         public string FactionTag
         {
             get { return factionTag; }
-            set { factionTag = value == null ? "" : value; }
+            set { factionTag = value ?? ""; }
         }
 
         public bool AllowAdmins
@@ -69,5 +72,9 @@ namespace NoGriefPlugin.Settings
             get { return allowAdmins; }
             set { allowAdmins = value; }
         }
+
+        [XmlIgnore]
+        [Browsable(false)]
+        public readonly MyConcurrentHashSet<long> ContainsEntities = new MyConcurrentHashSet<long>();
     }
 }

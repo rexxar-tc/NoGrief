@@ -1,5 +1,4 @@
 ﻿using System;
-using SEModAPIInternal.API.Entity.Sector.SectorObject;
 using VRage.ModAPI;
 
 namespace NoGriefPlugin.ProcessHandlers
@@ -82,15 +81,7 @@ namespace NoGriefPlugin.ProcessHandlers
         public virtual void OnEntityRemove(IMyEntity entity)
         {
         }
-
-        public virtual void OnCubeGridCreated(CubeGridEntity entity)
-        {
-        }
-
-        public virtual void OnCubeGridDeleted(CubeGridEntity entity)
-        {
-        }
-
+        
         public virtual void OnSectorSaved()
         {
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.ModAPI;
@@ -12,11 +13,7 @@ namespace NoGriefPlugin.Protection
     {
         private static bool _init;
         private static DateTime _lastLog;
-
-        public static HashSet<long> ProtectedId { get; set; } = new HashSet<long>();
-
-        public static Dictionary<long, BoundingSphereD> BulletProtect { get; set; } = new Dictionary<long, BoundingSphereD>();
-
+        
         public static void Init()
         {
             if (_init)
@@ -30,48 +27,42 @@ namespace NoGriefPlugin.Protection
         public static void ProcessDamage(object target, ref MyDamageInformation info)
         {
             bool found = false;
-            try
+            IMyEntity ent;
+            if (target is IMyEntity)
+                ent = (IMyEntity)target;
+            else if (target is IMySlimBlock)
+                ent = ((IMySlimBlock)target).CubeGrid;
+            else
             {
-                //check plugin settings
-                IMySlimBlock block = target as IMySlimBlock;
-                if (block == null)
-                    return;
+                NoGrief.Log.Error(target.GetType().FullName);
+                throw new Exception();
+            }
+            IMyEntity attacker;
+            if (!MyAPIGateway.Entities.TryGetEntityById(info.AttackerId, out attacker))
+                return;
 
-                long gridId = block.CubeGrid.EntityId;
-                IMyEntity attacker;
-                if (!MyAPIGateway.Entities.TryGetEntityById(info.AttackerId, out attacker))
-                    return;
-
-                if (ProtectedId.Contains(gridId))
+            if (PluginSettings.Instance.ProtectionZonesEnabled)
+            {
+                foreach (var item in PluginSettings.Instance.ProtectionItems)
                 {
+                    if (!item.Enabled && !item.StopDamage)
+                        continue;
+
+                    if (!item.ContainsEntities.Contains(ent.EntityId))
+                        continue;
+
+                    if (ent is IMyCharacter && !item.StopPlayerDamage)
+                        continue;
+                    
                     info.Amount = 0;
                     found = true;
-                }
-
-                else if (BulletProtect.ContainsKey(gridId) && info.Type == MyDamageType.Bullet)
-                {
-                    BoundingSphereD sphere;
-                    if (!BulletProtect.TryGetValue(gridId, out sphere))
-                    {
-                        NoGrief.Log.Info("Failed to get bounding sphere on " + gridId);
-                        return;
-                    }
-                    if (Vector3D.Distance(attacker.GetPosition(), sphere.Center) >= sphere.Radius)
-                    {
-                        info.Amount = 0;
-                        found = true;
-                    }
-                }
-                
-                if (found && DateTime.Now - _lastLog > TimeSpan.FromSeconds(1))
-                {
-                    _lastLog = DateTime.Now;
-                    NoGrief.Log.Info("Protected entity \"{0}\"", block.CubeGrid.DisplayName);
+                    break;
                 }
             }
-            catch (Exception ex)
+            if (found && DateTime.Now - _lastLog > TimeSpan.FromSeconds(1))
             {
-                NoGrief.Log.Error(ex, "fail damage handler");
+                _lastLog = DateTime.Now;
+                NoGrief.Log.Info($"Protected entity \"{ent.GetTopMostParent().DisplayName ?? ent.GetTopMostParent().EntityId.ToString()}\"");
             }
         }
     }
