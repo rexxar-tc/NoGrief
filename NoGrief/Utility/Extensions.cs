@@ -2,7 +2,7 @@
 using Sandbox.Game.Entities;
 using Sandbox.Game.Entities.Character;
 using Sandbox.Game.Entities.Cube;
-using VRage.ModAPI;
+using VRage.Game.Entity;
 using VRageMath;
 
 namespace NoGriefPlugin.Utility
@@ -32,20 +32,23 @@ namespace NoGriefPlugin.Utility
 
         #endregion
 
-        #region "IMyEntity"
+        #region "MyEntity"
 
-        public static void Stop(this IMyEntity entity)
+        public static void Stop(this MyEntity entity)
         {
-            if (entity == null || entity.Physics == null)
+            if (entity?.Physics == null)
                 return;
 
-            Wrapper.GameAction(() =>
+            Wrapper.BeginGameAction(() =>
                                {
-                                   entity.Physics.LinearVelocity = Vector3D.Zero;
-                                   entity.Physics.AngularVelocity = Vector3D.Zero;
+                                   entity.Physics.SetSpeeds(Vector3.Zero, Vector3.Zero);
                                });
         }
 
+        public static Vector3D Center(this MyEntity entity)
+        {
+            return entity.PositionComp.WorldAABB.Center;
+        }
         #endregion
     }
 }

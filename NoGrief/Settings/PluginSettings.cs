@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Xml.Serialization;
+using NoGriefPlugin.Protection;
 using NoGriefPlugin.Settings;
 using NoGriefPlugin.UtilityClasses;
 
@@ -17,6 +17,15 @@ namespace NoGriefPlugin
         public PluginSettings()
         {
             _serverChatName = "Server";
+            _protectionItems = new MTObservableCollection<SettingsProtectionItem>();
+            _protectionItems.CollectionChanged += ItemsCollectionChanged;
+            _protectionItems.CollectionChanged += (sender, args) => ProtectionMain.Instance.Init();
+
+            _exclusionItems = new MTObservableCollection<SettingsExclusionItem>();
+            _exclusionItems.CollectionChanged += ItemsCollectionChanged;
+
+            _pasteLimitMessagePrivate = "";
+            _pasteLimitMessagePublic = "";
         }
 
         #endregion
@@ -28,12 +37,23 @@ namespace NoGriefPlugin
         private static PluginSettings _instance;
         private static bool _loading;
 
+        private bool _protectionZonesEnabled;
+        private MTObservableCollection<SettingsProtectionItem> _protectionItems;
+        private bool _exclusionZonesEnabled;
+        private MTObservableCollection<SettingsExclusionItem> _exclusionItems;
+        private bool _limitPasteSize;
+        private int _pasteBlockCount;
+        private string _pasteLimitMessagePrivate;
+        private string _pasteLimitMessagePublic;
+        private bool _pasteLimitKick;
+        private bool _pasteLimitBan;
+        private bool _spaceMasterPasteExempt;
+        private bool _adminPasteExempt;
+
         #endregion
 
         #region Static Properties
-
-        public static DateTime RestartStartTime { get; private set; }
-
+        
         public static PluginSettings Instance
         {
             get { return _instance ?? (_instance = new PluginSettings()); }
@@ -52,8 +72,128 @@ namespace NoGriefPlugin
                 Save();
             }
         }
-        
 
+        public bool ProtectionZonesEnabled
+        {
+            get { return _protectionZonesEnabled; }
+            set
+            {
+                _protectionZonesEnabled = value;
+                Save();
+            }
+        }
+
+        public MTObservableCollection<SettingsProtectionItem> ProtectionItems
+        {
+            get { return _protectionItems; }
+            set
+            {
+                _protectionItems = value;
+                Save();
+            }
+        }
+
+        public bool ExclusionZonesEnabled
+        {
+            get { return _exclusionZonesEnabled; }
+            set
+            {
+                _exclusionZonesEnabled = value; 
+                Save();
+            }
+        }
+
+        public MTObservableCollection<SettingsExclusionItem> ExclusionItems
+        {
+            get { return _exclusionItems; }
+            set
+            {
+                _exclusionItems = value;
+                Save();
+            }
+        }
+
+        public bool LimitPasteSize
+        {
+            get { return _limitPasteSize; }
+            set
+            {
+                _limitPasteSize = value;
+                Save();
+                ProtectionMain.Instance.Init();
+            }
+        }
+
+        public int PasteBlockCount
+        {
+            get { return _pasteBlockCount; }
+            set
+            {
+                _pasteBlockCount = value;
+                Save();
+            }
+        }
+
+        public string PasteLimitMessagePrivate
+        {
+            get { return _pasteLimitMessagePrivate; }
+            set
+            {
+                _pasteLimitMessagePrivate = value;
+                Save();
+            }
+        }
+
+        public string PasteLimitMessagePublic
+        {
+            get { return _pasteLimitMessagePublic; }
+            set
+            {
+                _pasteLimitMessagePublic = value;
+                Save();
+            }
+        }
+
+        public bool PasteLimitKick
+        {
+            get { return _pasteLimitKick; }
+            set
+            {
+                _pasteLimitKick = value;
+                Save();
+            }
+        }
+
+        public bool PasteLimitBan
+        {
+            get { return _pasteLimitBan; }
+            set
+            {
+                _pasteLimitBan = value;
+                Save();
+            }
+        }
+
+        public bool SpaceMasterPasteExempt
+        {
+            get {return _spaceMasterPasteExempt; }
+            set
+            {
+                _spaceMasterPasteExempt = value;
+                Save();
+            }
+        }
+
+        public bool AdminPasteExempt
+        {
+            get { return _adminPasteExempt; }
+            set
+            {
+                _adminPasteExempt = value;
+                Save();
+            }
+        }
+        
         #endregion
 
         #region Loading and Saving

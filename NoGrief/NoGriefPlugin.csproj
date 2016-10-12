@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NoGriefPlugin</RootNamespace>
     <AssemblyName>NoGriefPlugin</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -71,17 +71,31 @@
       <DependentUpon>AssemblyFileVersion.tt</DependentUpon>
     </Compile>
     <Compile Include="ChatHandlers\ChatHandlerBase.cs" />
+    <Compile Include="NetworkHandlers\GridPasteHandler.cs" />
+    <Compile Include="NetworkHandlers\BlockNameHandler.cs" />
+    <Compile Include="NetworkHandlers\BlockOwnHandler.cs" />
+    <Compile Include="NetworkHandlers\BuildBlockHandler.cs" />
+    <Compile Include="NetworkHandlers\ColorBlockHandler.cs" />
+    <Compile Include="NetworkHandlers\ConvertPhyiscsHandler.cs" />
+    <Compile Include="NetworkHandlers\GridDeleteHandler.cs" />
+    <Compile Include="NetworkHandlers\GridNameHandler.cs" />
+    <Compile Include="NetworkHandlers\RemoveBlockHandler.cs" />
     <Compile Include="NoGrief.cs" />
+    <Compile Include="ProcessHandlers\ProcessExclusionZone.cs" />
+    <Compile Include="ProcessHandlers\ProcessProtectionZone.cs" />
     <Compile Include="Protection\DamageHandler.cs" />
     <Compile Include="ProcessHandlers\ProcessHandlerBase.cs" />
+    <Compile Include="Protection\ProtectionMain.cs" />
     <Compile Include="Settings\PluginSettings.cs" />
     <Compile Include="Settings\SettingsExclusionItem.cs" />
+    <Compile Include="Settings\SettingsProtectionItem.cs" />
     <Compile Include="UtilityClasses\MTObservableCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UtilityClasses\UIEditors.cs" />
     <Compile Include="Utility\Communication.cs" />
     <Compile Include="Utility\Extensions.cs" />
     <Compile Include="Utility\MathUtility.cs" />
+    <Compile Include="Utility\Utilities.cs" />
     <Compile Include="Utility\Wrapper.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -180,6 +194,9 @@
     <PreBuildEvent>set textTemplatingPath="%25CommonProgramFiles(x86)%25\Microsoft Shared\TextTemplating\$(VisualStudioVersion)\texttransform.exe"
 if %25textTemplatingPath%25=="\Microsoft Shared\TextTemplating\$(VisualStudioVersion)\texttransform.exe" set textTemplatingPath="%25CommonProgramFiles%25\Microsoft Shared\TextTemplating\$(VisualStudioVersion)\texttransform.exe"
 %25textTemplatingPath%25 "$(ProjectDir)AssemblyFileVersion.tt"</PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>copy E:\GitHub\NoGrief\NoGrief\bin\x64\Debug\NoGriefPlugin.dll C:\ProgramData\SpaceEngineersDedicated\stabtest\Mods\NoGrief\NoGriefPlugin.dll</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
