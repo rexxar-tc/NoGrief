@@ -5,6 +5,7 @@ using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
+using VRage.Utils;
 using VRageMath;
 
 namespace NoGriefPlugin.Protection
@@ -45,7 +46,7 @@ namespace NoGriefPlugin.Protection
             {
                 foreach (var item in PluginSettings.Instance.ProtectionItems)
                 {
-                    if (!item.Enabled && !item.StopDamage)
+                    if (!item.Enabled || !item.StopDamage)
                         continue;
 
                     if (!item.ContainsEntities.Contains(ent.EntityId))
@@ -53,7 +54,10 @@ namespace NoGriefPlugin.Protection
 
                     if (ent is IMyCharacter && !item.StopPlayerDamage)
                         continue;
-                    
+
+                    if (info.Type == MyStringHash.GetOrCompute("Grind") && !item.StopGrinding)
+                        continue;
+
                     info.Amount = 0;
                     found = true;
                     break;
