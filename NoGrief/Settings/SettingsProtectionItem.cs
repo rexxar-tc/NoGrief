@@ -20,6 +20,7 @@ namespace NoGriefPlugin.Settings
         private bool _adminExempt;
         private bool _ownerExempt;
         private bool _stopPlayerDamage;
+        private bool _stopGrinding;
 
         public bool Enabled
         {
@@ -91,6 +92,12 @@ namespace NoGriefPlugin.Settings
         {
             get { return _stopPlayerDamage; }
             set { _stopPlayerDamage = value; }
+        }
+
+        public bool StopGrinding
+        {
+            get { return _stopGrinding; }
+            set { _stopGrinding = value; }
         }
 
         [XmlIgnore]
