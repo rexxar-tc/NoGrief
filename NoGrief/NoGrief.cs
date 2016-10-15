@@ -56,9 +56,8 @@ namespace NoGriefPlugin
             _processHandlers = new List<ProcessHandlerBase>()
                                {
                                    new ProcessProtectionZone(),
-#if DEBUG
+                                   new ProcessZoneBoundaries(),
                                    new ProcessExclusionZone(),
-#endif
                                };
 
             // Setup chat handlers
@@ -198,7 +197,6 @@ namespace NoGriefPlugin
             set { PluginSettings.Instance.ProtectionItems = value; }
         }
 
-#if DEBUG
         [Category("Exclusion Zone")]
         public bool ExclusionZoneEnabled
         {
@@ -212,7 +210,6 @@ namespace NoGriefPlugin
             get { return PluginSettings.Instance.ExclusionItems; }
             set { PluginSettings.Instance.ExclusionItems = value; }
         }
-#endif
 
         [Category("Paste Limitations")]
         [Description("Enables the paste size limit")]

@@ -9,7 +9,7 @@ namespace NoGriefPlugin.Utility
 {
     public static class Extensions
     {
-        #region "MyCubeGrid"
+        #region MyCubeGrid
 
         public static List<ulong> GetPilotSteamIds(this MyCubeGrid grid)
         {
@@ -17,22 +17,18 @@ namespace NoGriefPlugin.Utility
             foreach (MySlimBlock block in grid.CubeBlocks)
             {
                 var cockpit = block.FatBlock as MyCockpit;
-                if (cockpit == null)
+
+                if (cockpit?.Pilot?.ControllerInfo?.Controller?.Player == null)
                     continue;
-
-                if (cockpit.Pilot == null)
-                    continue;
-
-                MyCharacter pilot = cockpit.Pilot;
-
-                steamIds.Add(pilot.ControllerInfo.Controller.Player.Client.SteamUserId);
+                
+                steamIds.Add(cockpit.Pilot.ControllerInfo.Controller.Player.Client.SteamUserId);
             }
             return steamIds;
         }
 
         #endregion
-
-        #region "MyEntity"
+    
+        #region MyEntity
 
         public static void Stop(this MyEntity entity)
         {
