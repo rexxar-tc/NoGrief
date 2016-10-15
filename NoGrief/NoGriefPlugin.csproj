@@ -83,6 +83,7 @@
     <Compile Include="NoGrief.cs" />
     <Compile Include="ProcessHandlers\ProcessExclusionZone.cs" />
     <Compile Include="ProcessHandlers\ProcessProtectionZone.cs" />
+    <Compile Include="ProcessHandlers\ProcessZoneBoundaries.cs" />
     <Compile Include="Protection\DamageHandler.cs" />
     <Compile Include="ProcessHandlers\ProcessHandlerBase.cs" />
     <Compile Include="Protection\ProtectionMain.cs" />

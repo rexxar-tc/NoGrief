@@ -15,7 +15,7 @@ namespace NoGriefPlugin.Settings
         private bool enabled;
         private long entityId;
         private string exclusionMessage;
-        private int exclusionRadius;
+        private int _radius;
         private string factionTag;
         private bool transportAdd;
 
@@ -31,10 +31,10 @@ namespace NoGriefPlugin.Settings
             set { entityId = value; }
         }
 
-        public int ExclusionRadius
+        public int Radius
         {
-            get { return exclusionRadius; }
-            set { exclusionRadius = value; }
+            get { return _radius; }
+            set { _radius = value; }
         }
 
         public string ExclusionMessage

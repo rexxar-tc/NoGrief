@@ -3,16 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using NoGriefPlugin.Settings;
 using NoGriefPlugin.Utility;
 using Sandbox.Game.Entities;
 using Sandbox.Game.Entities.Character;
 using Sandbox.Game.Weapons;
+using Sandbox.Game.World;
+using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI.Interfaces;
-using VRage.Generics;
 using VRage.Utils;
 using VRageMath;
 
@@ -20,47 +20,35 @@ namespace NoGriefPlugin.ProcessHandlers
 {
     public class ProcessExclusionZone : ProcessHandlerBase
     {
+
+
         public override int GetUpdateResolution()
         {
             return 200;
         }
 
-        private Type myProjectilesType = null;
-        private int updateCount = 0;
+        private readonly Dictionary<long, HashSet<long>> _redirectedEntites = new Dictionary<long, HashSet<long>>();
+
 
         public override void Handle()
         {
             if (!PluginSettings.Instance.ExclusionZonesEnabled)
                 return;
-
-            if (myProjectilesType == null)
+            
+            MyEntity[] entities = MyEntities.GetEntities().ToArray();
+            if (entities.Length == 0)
             {
-                myProjectilesType = Utilities.FindTypeInAllAssemblies("Sandbox.Game.Weapons.MyProjectiles");
-                if (myProjectilesType == null)
-                    throw new TypeAccessException("Can't find type for MyProjectiles!");
+                NoGrief.Log.Info("Failed to get entity list in exclusion zone update. Skipping update.");
+                return;
             }
 
-            //this mess of reflection gets the internal pool of projectiles so we can stop them later
-            var projPool = myProjectilesType.GetField("m_projectiles", BindingFlags.Static | BindingFlags.NonPublic)?.GetValue(null);
-            if(projPool==null)
-                throw new FieldAccessException("Can't get m_projectile");
-            //this field is a HashSetReader, we need this instead of the MyObjectsPool
-            var projActive = projPool.GetType().GetProperty("Active", BindingFlags.Instance | BindingFlags.Public);
-            if(projActive == null)
-                throw new FieldAccessException("Can't get Active");
-            //the type is MyHashSetReader<MyProjectile>, but MyProjectile is private
-            //cast to generic IEnumberable so we can get around this
-            var projectiles = projActive.GetValue(projPool) as IEnumerable;
-
-            if (projectiles == null)
-                throw new FieldAccessException("Can't get value for m_projectiles!");
-
-            HashSet<MyEntity> entities = MyEntities.GetEntities();
-            
-            foreach (var item in PluginSettings.Instance.ExclusionItems)
+            foreach (SettingsExclusionItem item in PluginSettings.Instance.ExclusionItems)
             {
                 if (!item.Enabled)
                     continue;
+
+                if (!_redirectedEntites.ContainsKey(item.EntityId))
+                    _redirectedEntites.Add(item.EntityId, new HashSet<long>());
 
                 MyEntity grid;
                 if (!MyEntities.TryGetEntityById(item.EntityId, out grid))
@@ -72,13 +60,13 @@ namespace NoGriefPlugin.ProcessHandlers
                 if (!Vector3.IsZero(grid.Physics.LinearVelocity) || !Vector3.IsZero(grid.Physics.AngularVelocity))
                     continue;
 
-                var sphere = new BoundingSphereD(grid.Center(), item.ExclusionRadius);
+                var sphere = new BoundingSphereD(grid.Center(), item.Radius);
 
                 if (init)
                 {
-                    foreach (var entity in entities)
+                    foreach (MyEntity entity in entities)
                     {
-                        if(sphere.Contains(entity.PositionComp.WorldVolume) == ContainmentType.Contains)
+                        if (sphere.Contains(entity.PositionComp.WorldVolume) == ContainmentType.Contains)
                             item.ContainsEntities.Add(entity.EntityId);
                     }
                     if (item.TransportAdd)
@@ -87,7 +75,8 @@ namespace NoGriefPlugin.ProcessHandlers
 
                 var outerSphere = new BoundingSphereD(sphere.Center, sphere.Radius + 50);
 
-                foreach (var entity in entities)
+                var approaching = new HashSet<long>();
+                foreach (MyEntity entity in entities)
                 {
                     if (entity?.Physics == null)
                         continue;
@@ -98,66 +87,136 @@ namespace NoGriefPlugin.ProcessHandlers
                     if (entity is MyVoxelBase)
                         continue;
 
-                    
+                    if (entity is MyAmmoBase)
+                        continue;
+
                     //entity is trying to enter the exclusion zone. push them away
                     if (outerSphere.Contains(entity.Center()) != ContainmentType.Disjoint && !item.ContainsEntities.Contains(entity.EntityId))
                     {
-                        if (entity is MyAmmoBase)
+                        approaching.Add(entity.EntityId);
+                            MyPlayer controller = MySession.Static.Players.GetControllingPlayer(entity);
+                        try
                         {
-                            ((IMyDestroyableObject)entity).DoDamage(100f, MyStringHash.GetOrCompute("Explosion"), true);
+                            if (controller?.Client != null)
+                            {
+                                if (!string.IsNullOrEmpty(item.FactionTag) && MySession.Static.Factions.GetPlayerFaction(controller.Identity.IdentityId).Tag == item.FactionTag)
+                                {
+                                    ExcludeEntities(entity, item);
+                                    if (item.TransportAdd && !item.AllowedPlayers.Contains(controller.Client.SteamUserId))
+                                        item.AllowedPlayers.Add(controller.Client.SteamUserId);
+                                    continue;
+                                }
+
+                                if (item.AllowAdmins && controller.IsAdmin)
+                                {
+                                    ExcludeEntities(entity, item);
+                                    continue;
+                                }
+
+                                if (item.AllowedPlayers.Contains(controller.Client.SteamUserId))
+                                {
+                                    ExcludeEntities(entity, item);
+                                    continue;
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            NoGrief.Log.Error(ex);
+                        }
+
+                        if (item.AllowedEntities.Contains(entity.EntityId))
+                        {
+                            ExcludeEntities(entity, item);
                             continue;
                         }
-                        var direction = Vector3D.Normalize(sphere.Center - entity.Center());
+
+                        Vector3D direction = Vector3D.Normalize(entity.Center() - sphere.Center);
                         Vector3D velocity = entity.Physics.LinearVelocity;
                         if (Vector3D.IsZero(velocity))
                             velocity += direction;
-                        Vector3D forceDir = Vector3D.Reflect(Vector3D.Normalize(velocity), direction);
-                        Vector3D force = forceDir * velocity.Length() * entity.Physics.Mass * 5 + -entity.Physics.LinearAcceleration * entity.Physics.Mass;
-                        if (!force.IsValid())
+
+                        if (!_redirectedEntites[item.EntityId].Contains(entity.EntityId))
                         {
-                            NoGrief.Log.Error("Invalid Force");
-                            continue;
-                        }
-                        if (!(entity is MyCharacter))
-                        {
-                            Wrapper.BeginGameAction(() =>
-                                                    {
-                                                        try
+                            _redirectedEntites[item.EntityId].Add(entity.EntityId);
+
+                            Vector3D forceDir = Vector3D.Reflect(Vector3D.Normalize(velocity), direction);
+                            //Vector3D force = forceDir * (velocity.Length()+10) * entity.Physics.Mass * 5 + -entity.Physics.LinearAcceleration * entity.Physics.Mass;
+                            //if (!force.IsValid())
+                            //{
+                            //    NoGrief.Log.Error("Invalid Force");
+                            //    continue;
+                            //}
+                            if (!(entity is MyCharacter))
+                            {
+                                if (controller?.Client != null && !string.IsNullOrEmpty(item.ExclusionMessage))
+                                    Communication.Notification(controller.Client.SteamUserId, MyFontEnum.White, 10000, item.ExclusionMessage);
+                                    
+                                Wrapper.BeginGameAction(() =>
                                                         {
-                                                            entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_FORCE, force, entity.Physics.CenterOfMassWorld, Vector3.Zero);
-                                                        }
-                                                        catch (Exception ex)
-                                                        {
-                                                            NoGrief.Log.Error(ex);
-                                                        }
-                                                    });
+                                                            try
+                                                            {
+                                                                //entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_FORCE, force, entity.Physics.CenterOfMassWorld, Vector3.Zero);
+                                                                //AddForce didn't work well enough. This will give us a hard bounce
+                                                                entity.Physics.SetSpeeds(velocity.Length() * forceDir, entity.Physics.AngularVelocity);
+                                                            }
+                                                            catch (Exception ex)
+                                                            {
+                                                                NoGrief.Log.Error(ex);
+                                                            }
+                                                        });
+                            }
+                            else
+                            {
+                                //characres require a different method
+                                var character = (MyCharacter)entity;
+                                Vector3D bodyDirection = -Vector3D.Normalize(Vector3D.Transform(direction, character.PositionComp.WorldMatrixInvScaled));
+                                Vector3D bodyForce = bodyDirection * character.Physics.LinearVelocity.Length() * character.Physics.Mass;
+                                Wrapper.BeginGameAction(() => character.Physics.AddForce(MyPhysicsForceType.ADD_BODY_FORCE_AND_BODY_TORQUE, bodyForce, character.Center(), Vector3.Zero));
+                            }
                         }
-                        else
+                        if (sphere.Contains(entity.Center()) != ContainmentType.Disjoint)
                         {
-                            //characres require a different method
-                            //var character = (MyCharacter)entity;
-                            //Vector3D bodyDirection = Vector3D.Transform(direction, character.PositionComp.WorldMatrixInvScaled);
-                            //Vector3D bodyForce = bodyDirection * character.Physics.LinearVelocity.Length() * character.Physics.Mass;//Vector3D.Transform(worldForce, character.PositionComp.WorldMatrixNormalizedInv);
-                            //Wrapper.BeginGameAction(() => character.Physics.AddForce(MyPhysicsForceType.ADD_BODY_FORCE_AND_BODY_TORQUE, bodyForce, character.Center(), Vector3.Zero));
+                            if (!(entity is MyCharacter))
+                            {
+                                Vector3D force = direction * (velocity.Length() + 100) * entity.Physics.Mass * 5 * entity.Physics.LinearAcceleration.Length();
+                                Wrapper.BeginGameAction(() => entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_FORCE, force, entity.Physics.CenterOfMassWorld, Vector3.Zero));
+                            }
                         }
                     }
                 }
 
-                //delete any bullets that are entering the exclusion zone
-                foreach (object obj in projectiles)
+                var toRemove = new List<long>();
+                //TODO: We're searching the dictionary way too much. Do something about it later
+                foreach (long id in _redirectedEntites[item.EntityId])
                 {
-                    Vector3D pos = (Vector3D)obj.GetType().GetField("m_position",BindingFlags.NonPublic|BindingFlags.Instance).GetValue(obj);
-                    if (outerSphere.Contains(pos) != ContainmentType.Disjoint && sphere.Contains(pos) == ContainmentType.Disjoint)
-                    {
-                        //obj.GetType().GetMethod("Close", BindingFlags.Public | BindingFlags.Instance).Invoke(obj, null);
-                        var state = obj.GetType().GetField("m_state",BindingFlags.NonPublic|BindingFlags.Instance);
-                        
-                        if(state==null)
-                            throw new FieldAccessException("m_state");
+                    if (!approaching.Contains(id))
+                        toRemove.Add(id);
+                }
+                foreach (long rem in toRemove)
+                    _redirectedEntites[item.EntityId].Remove(rem);
+            }
+        }
 
-                        //set state to KILLED_AND_DRAWN to trick the game into removing the bullet on the next updat
-                        //this doesn't sync :(
-                        state.SetValue(obj, (byte)2);
+        private void ExcludeEntities(MyEntity entity, SettingsExclusionItem item)
+        {
+            if (!(entity is MyCubeGrid))
+            {
+                item.ContainsEntities.Add(entity.EntityId);
+                return;
+            }
+            var grid = (MyCubeGrid)entity;
+            var nodes = MyCubeGridGroups.Static.GetGroups(GridLinkTypeEnum.Physical).GetGroupNodes(grid);
+            foreach (var node in nodes)
+            {
+                item.ContainsEntities.Add(node.EntityId);
+                if (item.TransportAdd)
+                {
+                    item.AllowedEntities.Add(entity.EntityId);
+                    foreach (var id in node.GetPilotSteamIds())
+                    {
+                        if (!item.AllowedPlayers.Contains(id))
+                            item.AllowedPlayers.Add(id);
                     }
                 }
             }
