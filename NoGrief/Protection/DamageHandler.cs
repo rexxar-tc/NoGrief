@@ -1,8 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using Sandbox.Game.Entities;
+using Sandbox.Game.Entities.Character;
+using Sandbox.Game.Entities.Cube;
+using Sandbox.Game.Weapons;
 using Sandbox.ModAPI;
 using VRage.Game;
+using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.Utils;
@@ -28,18 +34,18 @@ namespace NoGriefPlugin.Protection
         public static void ProcessDamage(object target, ref MyDamageInformation info)
         {
             bool found = false;
-            IMyEntity ent;
-            if (target is IMyEntity)
-                ent = (IMyEntity)target;
-            else if (target is IMySlimBlock)
-                ent = ((IMySlimBlock)target).CubeGrid;
+            MyEntity ent;
+            if (target is MyEntity)
+                ent = (MyEntity)target;
+            else if (target is MySlimBlock)
+                ent = ((MySlimBlock)target).CubeGrid;
             else
             {
                 NoGrief.Log.Error(target.GetType().FullName);
                 throw new Exception();
             }
-            IMyEntity attacker;
-            if (!MyAPIGateway.Entities.TryGetEntityById(info.AttackerId, out attacker))
+            MyEntity attacker;
+            if (!MyEntities.TryGetEntityById(info.AttackerId, out attacker))
                 return;
 
             if (PluginSettings.Instance.ProtectionZonesEnabled)
@@ -52,11 +58,29 @@ namespace NoGriefPlugin.Protection
                     if (!item.ContainsEntities.Contains(ent.EntityId))
                         continue;
 
-                    if (ent is IMyCharacter && !item.StopPlayerDamage)
+                    if (ent is MyCharacter && !item.StopPlayerDamage)
                         continue;
+                    
+                    if (info.Type == MyDamageType.Grind && item.StopGrinding)
+                    {
+                        //why the hell is Owner protected
+                        var ownerField = typeof(MyEngineerToolBase).GetField("Owner", BindingFlags.NonPublic | BindingFlags.Instance);
+                        var character = ownerField?.GetValue(attacker) as MyCharacter;
+                        if (character?.ControllerInfo?.Controller?.Player == null)
+                        {
+                            continue;
+                        }
 
-                    if (info.Type == MyStringHash.GetOrCompute("Grind") && !item.StopGrinding)
-                        continue;
+                        if (item.AdminExempt && character.ControllerInfo.Controller.Player.IsAdmin)
+                            return;
+
+                        var grid = ent as MyCubeGrid;
+                        if (grid == null)
+                            continue;
+
+                        if (item.OwnerExempt && grid.BigOwners.Contains(character.ControllerInfo.Controller.Player.Identity.IdentityId))
+                            return;
+                    }
 
                     info.Amount = 0;
                     found = true;
