@@ -71,6 +71,7 @@
       <DependentUpon>AssemblyFileVersion.tt</DependentUpon>
     </Compile>
     <Compile Include="ChatHandlers\ChatHandlerBase.cs" />
+    <Compile Include="NetworkHandlers\ActionLogger.cs" />
     <Compile Include="NetworkHandlers\GridPasteHandler.cs" />
     <Compile Include="NetworkHandlers\BlockNameHandler.cs" />
     <Compile Include="NetworkHandlers\BlockOwnHandler.cs" />
@@ -79,6 +80,7 @@
     <Compile Include="NetworkHandlers\ConvertPhyiscsHandler.cs" />
     <Compile Include="NetworkHandlers\GridDeleteHandler.cs" />
     <Compile Include="NetworkHandlers\GridNameHandler.cs" />
+    <Compile Include="NetworkHandlers\ProjectionHandler.cs" />
     <Compile Include="NetworkHandlers\RemoveBlockHandler.cs" />
     <Compile Include="NoGrief.cs" />
     <Compile Include="ProcessHandlers\ProcessExclusionZone.cs" />
