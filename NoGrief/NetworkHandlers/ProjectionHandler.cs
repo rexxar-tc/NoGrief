@@ -73,24 +73,22 @@ namespace NoGriefPlugin.NetworkHandlers
                 Communication.Notification(remoteUserId, MyFontEnum.White, 10000, PluginSettings.Instance.ProjectionLimitMessage);
 
             NoGrief.Log.Info($"Intercepted projection change request from {PlayerMap.Instance.GetFastPlayerNameFromSteamId(remoteUserId)}:{remoteUserId}. Projection size: {grid.CubeBlocks.Count}");
-
-            proj.SendRemoveProjection();
-            //this junk was to try and work around the fact that the client updates the projected grid locally before sending the network event
-            //I tried to re-send the current grid but it didn't work
-            //if (proj.Clipboard.PreviewGrids.Count != 0)
-            //{
-            //    //var offset = proj.ProjectionOffset;
-            //    //var rot = proj.ProjectionRotation;
-            //    //bool visible = proj.GetValueBool("ShowOnlyBuildable");
-            //    //as much as I hate to do reflection here, it's necessary :(
-            //    var projGrid = typeof(MyProjectorBase).GetField("m_originalGridBuilder", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(proj) as MyObjectBuilder_CubeGrid;
-            //    typeof(MyProjectorBase).GetMethod("SendNewBlueprint", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(proj, new object[] {projGrid});
-            //    //proj.SendNewOffset(offset, rot, visible);
-            //}
-            //else
-            //{
-            //    proj.SendRemoveProjection();
-            //}
+            
+            if (proj.Clipboard.PreviewGrids.Count != 0)
+            {
+                //var offset = proj.ProjectionOffset;
+                //var rot = proj.ProjectionRotation;
+                //bool visible = proj.GetValueBool("ShowOnlyBuildable");
+                //as much as I hate to do reflection here, it's necessary :(
+                var projGrid = typeof(MyProjectorBase).GetField("m_originalGridBuilder", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(proj) as MyObjectBuilder_CubeGrid;
+                proj.SendRemoveProjection();
+                typeof(MyProjectorBase).GetMethod("SendNewBlueprint", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(proj, new object[] { projGrid });
+                //proj.SendNewOffset(offset, rot, visible);
+            }
+            else
+            {
+                proj.SendRemoveProjection();
+            }
 
             return true;
         }
