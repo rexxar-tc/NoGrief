@@ -47,6 +47,13 @@ namespace NoGriefPlugin.Protection
                 ServerNetworkManager.Instance.RegisterNetworkHandler(new GridPasteHandler());
                 NoGrief.Log.Info("Init GridPaste");
             }
+
+            if (PluginSettings.Instance.LimitProjectionSize && !_initFlags.HasFlag(InitEnum.ProjectionLimit))
+            {
+                _initFlags |= InitEnum.ProjectionLimit;
+                ServerNetworkManager.Instance.RegisterNetworkHandler(new ProjectionHandler());
+                NoGrief.Log.Info("Init ProjectionHandler");
+            }
         }
 
         [Flags]
@@ -57,6 +64,7 @@ namespace NoGriefPlugin.Protection
             BlockPaint = 1 << 2,
             GridDelete = 1 << 3,
             PasteLimit = 1 << 4,
+            ProjectionLimit = 1 << 5,
         }
     }
 }

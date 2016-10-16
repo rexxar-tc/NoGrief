@@ -50,6 +50,11 @@ namespace NoGriefPlugin
         private bool _spaceMasterPasteExempt;
         private bool _adminPasteExempt;
 
+        private bool _limitProjectionSize;
+        private int _projectionBlockCount;
+        private bool _adminProjectionExempt;
+        private string _projectionLimitMessage;
+
         #endregion
 
         #region Static Properties
@@ -193,7 +198,48 @@ namespace NoGriefPlugin
                 Save();
             }
         }
-        
+
+        public bool LimitProjectionSize
+        {
+            get { return _limitProjectionSize; }
+            set
+            {
+                _limitProjectionSize = value;
+                ProtectionMain.Instance.Init();
+                Save();
+            }
+        }
+
+        public int ProjectionBlockCount
+        {
+            get { return _projectionBlockCount; }
+            set
+            {
+                _projectionBlockCount = value;
+                Save();
+            }
+        }
+
+        public bool AdminProjectionExempt
+        {
+            get {return _adminProjectionExempt; }
+            set
+            {
+                _adminProjectionExempt = value;
+                Save();
+            }
+        }
+
+        public string ProjectionLimitMessage
+        {
+            get { return _projectionLimitMessage; }
+            set
+            {
+                _projectionLimitMessage = value;
+                Save();
+            }
+        }
+
         #endregion
 
         #region Loading and Saving

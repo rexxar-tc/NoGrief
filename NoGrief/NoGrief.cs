@@ -273,9 +273,40 @@ namespace NoGriefPlugin
             set { PluginSettings.Instance.AdminPasteExempt = value; }
         }
 
-#endregion
+        [Category("Projection Limitations")]
+        [Description("Puts a limit on the size of ships players can load into a projector")]
+        public bool LimitProjectionSize
+        {
+            get { return PluginSettings.Instance.LimitProjectionSize; }
+            set { PluginSettings.Instance.LimitProjectionSize = value; }
+        }
 
-#region IPlugin Members
+        [Category("Projection Limitations")]
+        public int ProjectionBlockCount
+        {
+            get { return PluginSettings.Instance.ProjectionBlockCount; }
+            set { PluginSettings.Instance.ProjectionBlockCount = value; }
+        }
+
+        [Category("Projection Limitations")]
+        [Description("Admins or projectors owned by admins are allowed to bypass the limit")]
+        public bool AdminProjectionExempt
+        {
+            get { return PluginSettings.Instance.AdminProjectionExempt; }
+            set { PluginSettings.Instance.AdminProjectionExempt = value; }
+        }
+
+        [Category("Projection Limitations")]
+        [Description("This message will be shown to players who try to load a projection over the limit")]
+        public string ProjectionLimitMessage
+        {
+            get { return PluginSettings.Instance.ProjectionLimitMessage; }
+            set { PluginSettings.Instance.ProjectionLimitMessage = value; }
+        }
+
+        #endregion
+
+        #region IPlugin Members
 
         public void Init()
         {
