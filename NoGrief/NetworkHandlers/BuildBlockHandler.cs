@@ -7,6 +7,7 @@ using SEModAPIInternal.API.Server;
 using VRage.Game;
 using VRage.Library.Collections;
 using VRage.Network;
+using VRageMath;
 
 namespace NoGriefPlugin.NetworkHandlers
 {
@@ -116,6 +117,7 @@ namespace NoGriefPlugin.NetworkHandlers
                 return false;
             }
 
+            bool found = false;
             foreach (var item in PluginSettings.Instance.ProtectionItems)
             {
                 if (!item.Enabled || !item.StopBuild)
@@ -130,11 +132,16 @@ namespace NoGriefPlugin.NetworkHandlers
                 if (item.OwnerExempt && grid.BigOwners.Contains(PlayerMap.Instance.GetFastPlayerIdFromSteamId(remoteUserId)))
                     continue;
 
-                NoGrief.Log.Info($"Intercepted block build request from {PlayerMap.Instance.GetFastPlayerNameFromSteamId(remoteUserId)} for grid {grid.DisplayName ?? "ID"}:{grid.EntityId}");
-                Communication.SendPrivateInformation(remoteUserId, "You cannot build blocks in this protected area!");
-                return true;
+                found = true;
+                break;
             }
-            return false;
+
+            if (!found)
+                return false;
+
+            NoGrief.Log.Info($"Intercepted block build request from {PlayerMap.Instance.GetFastPlayerNameFromSteamId(remoteUserId)} for grid {grid.DisplayName ?? "ID"}:{grid.EntityId}");
+            Communication.SendPrivateInformation(remoteUserId, "You cannot build blocks in this protected area!");
+            return true;
         }
     }
 }
