@@ -147,31 +147,21 @@ namespace NoGriefPlugin.ProcessHandlers
                             //    NoGrief.Log.Error("Invalid Force");
                             //    continue;
                             //}
+                            if (controller?.Client != null && !string.IsNullOrEmpty(item.ExclusionMessage))
+                                Communication.Notification(controller.Client.SteamUserId, MyFontEnum.White, 10000, item.ExclusionMessage);
                             if (!(entity is MyCharacter))
                             {
-                                if (controller?.Client != null && !string.IsNullOrEmpty(item.ExclusionMessage))
-                                    Communication.Notification(controller.Client.SteamUserId, MyFontEnum.White, 10000, item.ExclusionMessage);
-                                    
-                                Wrapper.BeginGameAction(() =>
-                                                        {
-                                                            try
-                                                            {
-                                                                //entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_FORCE, force, entity.Physics.CenterOfMassWorld, Vector3.Zero);
-                                                                //AddForce didn't work well enough. This will give us a hard bounce
-                                                                entity.Physics.SetSpeeds(velocity.Length() * forceDir, entity.Physics.AngularVelocity);
-                                                            }
-                                                            catch (Exception ex)
-                                                            {
-                                                                NoGrief.Log.Error(ex);
-                                                            }
-                                                        });
+                                Vector3 force = forceDir * velocity.Length() * entity.Physics.Mass * 60 * 1.5;
+                                force += entity.Physics.LinearAcceleration.Length() * entity.Physics.Mass * 60;
+                                Wrapper.BeginGameAction(() => entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_FORCE, force, entity.Physics.CenterOfMassWorld, Vector3.Zero));
                             }
                             else
                             {
                                 //characres require a different method
                                 var character = (MyCharacter)entity;
                                 Vector3D bodyDirection = -Vector3D.Normalize(Vector3D.Transform(direction, character.PositionComp.WorldMatrixInvScaled));
-                                Vector3D bodyForce = bodyDirection * character.Physics.LinearVelocity.Length() * character.Physics.Mass;
+                                Vector3D bodyForce = bodyDirection * character.Physics.LinearVelocity.Length() * character.Physics.Mass * 60 * 1.5;
+                                bodyForce += character.Physics.LinearAcceleration.Length() * character.Physics.Mass * 60;
                                 Wrapper.BeginGameAction(() => character.Physics.AddForce(MyPhysicsForceType.ADD_BODY_FORCE_AND_BODY_TORQUE, bodyForce, character.Center(), Vector3.Zero));
                             }
                         }
@@ -179,8 +169,17 @@ namespace NoGriefPlugin.ProcessHandlers
                         {
                             if (!(entity is MyCharacter))
                             {
-                                Vector3D force = direction * (velocity.Length() + 100) * entity.Physics.Mass * 5 * entity.Physics.LinearAcceleration.Length();
+                                Vector3D force = direction * (velocity.Length() + 5) * entity.Physics.Mass * 60 * 2;
+                                force += entity.Physics.LinearAcceleration.Length() * entity.Physics.Mass * 60;
                                 Wrapper.BeginGameAction(() => entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_FORCE, force, entity.Physics.CenterOfMassWorld, Vector3.Zero));
+                            }
+                            else
+                            {
+                                var character = (MyCharacter)entity;
+                                Vector3D bodyDirection = -Vector3D.Normalize(Vector3D.Transform(direction, character.PositionComp.WorldMatrixInvScaled));
+                                Vector3D bodyForce = bodyDirection * (character.Physics.LinearVelocity.Length() + 5) * character.Physics.Mass * 60 * 2;
+                                bodyForce += character.Physics.LinearAcceleration.Length() * character.Physics.Mass * 60;
+                                Wrapper.BeginGameAction(() => character.Physics.AddForce(MyPhysicsForceType.ADD_BODY_FORCE_AND_BODY_TORQUE, bodyForce, character.Center(), Vector3.Zero));
                             }
                         }
                     }
