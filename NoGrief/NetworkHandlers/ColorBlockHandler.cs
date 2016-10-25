@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Collections.Generic;
+using System.Net;
 using System.Timers;
 using NoGriefPlugin.Utility;
 using Sandbox.Game.Entities;
@@ -12,38 +13,70 @@ namespace NoGriefPlugin.NetworkHandlers
 {
     public class ColorBlockHandler : NetworkHandlerBase
     {
-        private static bool? _unitTestResult;
+        private static Dictionary<string, bool> _unitTestResults = new Dictionary<string, bool>();
+        private const string ColorBlocks = "ColorBlockRequest";
+        private const string ColorGrid = "ColorGridFriendlyRequest";
         public override bool CanHandle( CallSite site )
         {
-            if ( site.MethodInfo.Name != "ColorBlockRequest" )
+            if (site.MethodInfo.Name == ColorBlocks)
+            {
+                bool result;
+                if (!_unitTestResults.TryGetValue(ColorBlocks, out result))
+                {
+                    //make sure Keen hasn't changed the method somehow
+                    //private void ColorBlockRequest(Vector3I min, Vector3I max, Vector3 newHSV, bool playSound)
+                    var parameters = site.MethodInfo.GetParameters();
+                    if (parameters.Length != 4)
+                    {
+                        _unitTestResults[ColorBlocks] = false;
+                        return false;
+                    }
+
+                    if (parameters[0].ParameterType != typeof(Vector3I)
+                        || parameters[1].ParameterType != typeof(Vector3I)
+                        || parameters[2].ParameterType != typeof(Vector3)
+                        || parameters[3].ParameterType != typeof(bool))
+                    {
+                        _unitTestResults[ColorBlocks] = false;
+                        return false;
+                    }
+
+                    _unitTestResults[ColorBlocks] = true;
+                    result = true;
+                }
+
+                return result;
+            }
+            else if (site.MethodInfo.Name == ColorGrid)
+            {
+                bool result;
+                if (!_unitTestResults.TryGetValue(ColorGrid, out result))
+                {
+                    var parameters = site.MethodInfo.GetParameters();
+                    if (parameters.Length != 2)
+                    {
+                        _unitTestResults[ColorGrid] = false;
+                        return false;
+                    }
+
+                    if (parameters[0].ParameterType != typeof(Vector3)
+                        || parameters[1].ParameterType != typeof(bool))
+                    {
+
+                        _unitTestResults[ColorGrid] = false;
+                        return false;
+                    }
+
+                    _unitTestResults[ColorGrid] = true;
+                    result = true;
+                }
+
+                return result;
+            }
+            else
             {
                 return false;
             }
-
-            if ( _unitTestResult == null )
-            {
-                //make sure Keen hasn't changed the method somehow
-                //private void ColorBlockRequest(Vector3I min, Vector3I max, Vector3 newHSV, bool playSound)
-                var parameters = site.MethodInfo.GetParameters();
-                if ( parameters.Length != 4 )
-                {
-                    _unitTestResult = false;
-                    return false;
-                }
-
-                if ( parameters[0].ParameterType != typeof(Vector3I)
-                     || parameters[1].ParameterType != typeof(Vector3I)
-                     || parameters[2].ParameterType != typeof(Vector3)
-                     || parameters[3].ParameterType != typeof(bool) )
-                {
-                    _unitTestResult = false;
-                    return false;
-                }
-
-                _unitTestResult = true;
-            }
-
-            return _unitTestResult.Value;
         }
 
         Timer _kickTimer = new Timer(30000);

@@ -27,18 +27,20 @@ namespace NoGriefPlugin.NetworkHandlers
 
         public override bool CanHandle(CallSite site)
         {
-            //we want everything except these two message types because they're sent many times per second and we don't want to decode them
-            return !site.MethodInfo.Name.Contains("SyncPropertyChanged") && !site.MethodInfo.Name.Contains("OnSimulationInfo");
+            //we want everything except these message types because they're sent many times per second and we don't want to decode them
+            return !site.MethodInfo.Name.Contains("SyncPropertyChanged") && !site.MethodInfo.Name.Contains("OnSimulationInfo") && !site.MethodInfo.Name.Contains("ModMessage");
         }
 
         public override bool Handle(ulong remoteUserId, CallSite site, BitStream stream, object obj)
         {
-            var ent = obj as MyEntity;
-            if(ent==null) 
-                _logBuffer.Enqueue($"Player {PlayerMap.Instance.GetFastPlayerNameFromSteamId(remoteUserId)}:{remoteUserId} sent event {site.MethodInfo.Name}");
-            else
-                _logBuffer.Enqueue($"Player {PlayerMap.Instance.GetFastPlayerNameFromSteamId(remoteUserId)}:{remoteUserId} sent event {site.MethodInfo.Name} near {ent.Center()}");
-
+            Task.Run(() =>
+                     {
+                         var ent = obj as MyEntity;
+                         if (ent == null)
+                             _logBuffer.Enqueue($"Player {PlayerMap.Instance.GetFastPlayerNameFromSteamId(remoteUserId)}:{remoteUserId} sent event {site.MethodInfo.Name}");
+                         else
+                             _logBuffer.Enqueue($"Player {PlayerMap.Instance.GetFastPlayerNameFromSteamId(remoteUserId)}:{remoteUserId} sent event {site.MethodInfo.Name} near {ent.Center()}");
+                     });
             return false;
         }
 

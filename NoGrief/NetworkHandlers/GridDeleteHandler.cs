@@ -44,12 +44,14 @@ namespace NoGriefPlugin.NetworkHandlers
             if (!PluginSettings.Instance.ProtectionZonesEnabled)
                 return false;
 
-            var grid = obj as MyCubeGrid;
-            if (grid == null)
-            {
-                NoGrief.Log.Debug("Null grid in GridDeleteHandler");
+            long entityId = 0;
+
+            base.Serialize(site.MethodInfo, stream, ref entityId);
+
+            MyCubeGrid grid;
+
+            if (!MyEntities.TryGetEntityById(entityId, out grid))
                 return false;
-            }
 
             foreach (var item in PluginSettings.Instance.ProtectionItems)
             {

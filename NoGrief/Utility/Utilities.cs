@@ -26,7 +26,7 @@ namespace NoGriefPlugin.Utility
                         }
                     }
                 }
-                catch (System.Reflection.ReflectionTypeLoadException ex)
+                catch //(System.Reflection.ReflectionTypeLoadException ex)
                 {
                     //if (ExtenderOptions.IsDebugging)
                     //    foreach (var excep in ex.LoaderExceptions)

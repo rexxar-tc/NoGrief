@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using VRage.Collections;
+using VRageMath;
 
 namespace NoGriefPlugin.Settings
 {
@@ -103,5 +104,6 @@ namespace NoGriefPlugin.Settings
         [XmlIgnore]
         [Browsable(false)]
         public readonly MyConcurrentHashSet<long> ContainsEntities = new MyConcurrentHashSet<long>();
+        
     }
 }

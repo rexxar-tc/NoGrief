@@ -72,6 +72,7 @@
     </Compile>
     <Compile Include="ChatHandlers\ChatHandlerBase.cs" />
     <Compile Include="NetworkHandlers\ActionLogger.cs" />
+    <Compile Include="NetworkHandlers\GridSpawnHandler.cs" />
     <Compile Include="NetworkHandlers\GridPasteHandler.cs" />
     <Compile Include="NetworkHandlers\BlockNameHandler.cs" />
     <Compile Include="NetworkHandlers\BlockOwnHandler.cs" />
@@ -82,6 +83,8 @@
     <Compile Include="NetworkHandlers\GridNameHandler.cs" />
     <Compile Include="NetworkHandlers\ProjectionHandler.cs" />
     <Compile Include="NetworkHandlers\RemoveBlockHandler.cs" />
+    <Compile Include="NetworkHandlers\SpawnAsteroidHandler.cs" />
+    <Compile Include="NetworkHandlers\SpawnPlanetHandler.cs" />
     <Compile Include="NoGrief.cs" />
     <Compile Include="ProcessHandlers\ProcessExclusionZone.cs" />
     <Compile Include="ProcessHandlers\ProcessProtectionZone.cs" />
@@ -199,7 +202,7 @@ if %25textTemplatingPath%25=="\Microsoft Shared\TextTemplating\$(VisualStudioVer
 %25textTemplatingPath%25 "$(ProjectDir)AssemblyFileVersion.tt"</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>copy E:\GitHub\NoGrief\NoGrief\bin\x64\Debug\NoGriefPlugin.dll C:\ProgramData\SpaceEngineersDedicated\stabtest\Mods\NoGrief\NoGriefPlugin.dll</PostBuildEvent>
+    <PostBuildEvent>copy E:\GitHub\NoGrief\NoGrief\bin\x64\Debug\NoGriefPlugin.dll C:\ProgramData\SpaceEngineersDedicated\SESEDevTest\Mods\NoGrief\NoGriefPlugin.dll</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
