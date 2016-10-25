@@ -55,6 +55,12 @@ namespace NoGriefPlugin
         private bool _adminProjectionExempt;
         private string _projectionLimitMessage;
 
+        private bool _stopPlanetPaste;
+        private bool _stopAsteroidPaste;
+        private bool _voxelPasteSpaceMaster;
+        private bool _voxelPasteKick;
+        private bool _voxlePasteBan;
+
         #endregion
 
         #region Static Properties
@@ -240,6 +246,57 @@ namespace NoGriefPlugin
             }
         }
 
+        public bool StopPlanetPaste
+        {
+            get { return _stopPlanetPaste; }
+            set
+            {
+                _stopPlanetPaste = value;
+                Save();
+                ProtectionMain.Instance.Init();
+            }
+        }
+
+        public bool StopAsteroidPaste
+        {
+            get { return _stopAsteroidPaste; }
+            set
+            {
+                _stopAsteroidPaste = value;
+                Save();
+                ProtectionMain.Instance.Init();
+            }
+        }
+
+        public bool VoxelPasteSpaceMaster
+        {
+            get { return _voxelPasteSpaceMaster; }
+            set
+            {
+                _voxelPasteSpaceMaster = value; 
+                Save();
+            }
+        }
+
+        public bool VoxelPasteKick
+        {
+            get { return _voxelPasteKick; }
+            set
+            {
+                _voxelPasteKick = value;
+                Save();
+            }
+        }
+
+        public bool VoxelPasteBan
+        {
+            get { return _voxlePasteBan; }
+            set
+            {
+                _voxlePasteBan = value;
+                Save();
+            }
+        }
         #endregion
 
         #region Loading and Saving

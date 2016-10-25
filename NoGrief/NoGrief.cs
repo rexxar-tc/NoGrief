@@ -304,26 +304,55 @@ namespace NoGriefPlugin
             set { PluginSettings.Instance.ProjectionLimitMessage = value; }
         }
 
+        [Category("Voxel Paste")]
+        [Description("Prevents users pasting planets")]
+        public bool StopPlanetPaste
+        {
+            get { return PluginSettings.Instance.StopPlanetPaste; }
+            set { PluginSettings.Instance.StopPlanetPaste = value; }
+        }
+
+        [Category("Voxel Paste")]
+        [Description("Prevents users pasting asteroids")]
+        public bool StopAsteroidPaste
+        {
+            get { return PluginSettings.Instance.StopAsteroidPaste; }
+            set { PluginSettings.Instance.StopAsteroidPaste = value; }
+        }
+
+        [Category("Voxel Paste")]
+        [Description("Users with Space Master rights can paste voxels")]
+        public bool VoxelPasteSpaceMaster
+        {
+            get { return PluginSettings.Instance.VoxelPasteSpaceMaster; }
+            set { PluginSettings.Instance.VoxelPasteSpaceMaster = value; }
+        }
+
+        [Category("Voxel Paste")]
+        public bool VoxelPasteKick
+        {
+            get { return PluginSettings.Instance.VoxelPasteKick; }
+            set { PluginSettings.Instance.VoxelPasteKick = value; }
+        }
+
+        [Category("Voxel Paste")]
+        public bool VoxelPasteBan
+        {
+            get { return PluginSettings.Instance.VoxelPasteBan; }
+            set { PluginSettings.Instance.VoxelPasteBan = value; }
+        }
         #endregion
 
         #region IPlugin Members
 
         public void Init()
         {
-            //register object builder assembly
-            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SpaceEngineers.ObjectBuilders.DLL");
-            MyPlugins.RegisterGameObjectBuildersAssemblyFile(path);
-
             Log.Debug("Initializing NoGrief plugin at path {0}\\", Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
             DoInit(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\");
         }
 
         public void InitWithPath(string modPath)
         {
-            //register object builder assembly
-            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SpaceEngineers.ObjectBuilders.DLL");
-            MyPlugins.RegisterGameObjectBuildersAssemblyFile(path);
-
             Log.Debug("Initializing NoGrief plugin at path {0}\\", Path.GetDirectoryName(modPath));
             DoInit(Path.GetDirectoryName(modPath) + "\\");
         }
