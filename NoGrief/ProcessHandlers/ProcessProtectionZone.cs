@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using NoGriefPlugin.Protection;
+﻿using System.Linq;
+using NoGriefPlugin.Settings;
 using NoGriefPlugin.Utility;
 using Sandbox.Game.Entities;
 using VRage.Game.Entity;
@@ -20,33 +19,39 @@ namespace NoGriefPlugin.ProcessHandlers
             if (!PluginSettings.Instance.ProtectionZonesEnabled)
                 return;
 
-            var entities = MyEntities.GetEntities().ToArray();
+            MyEntity[] entities = MyEntities.GetEntities().ToArray();
             if (entities.Length == 0)
             {
                 NoGrief.Log.Info("Failed to get entities in protection zone update. Skipping update.");
                 return;
             }
-            
-            foreach (var item in PluginSettings.Instance.ProtectionItems)
+
+            foreach (SettingsProtectionItem item in PluginSettings.Instance.ProtectionItems)
             {
                 if (!item.Enabled)
                     continue;
 
                 MyEntity outEntity;
                 if (!MyEntities.TryGetEntityById(item.EntityId, out outEntity))
+                {
+                    NoGrief.Log.Error($"Can't find entity with ID {item.EntityId} in protection zone update!");
                     continue;
+                }
 
                 item.ContainsEntities.Clear();
 
-                //zones don't work on moving entities
-                if (!Vector3.IsZero(outEntity.Physics.LinearVelocity) || !Vector3.IsZero(outEntity.Physics.AngularVelocity))
-                    continue;
+                if (outEntity.Physics != null)
+                {
+                    //zones don't work on moving entities
+                    if (!Vector3.IsZero(outEntity.Physics.LinearVelocity) || !Vector3.IsZero(outEntity.Physics.AngularVelocity))
+                        continue;
+                }
 
                 var sphere = new BoundingSphereD(outEntity.Center(), item.Radius);
 
-                foreach (var entity in entities)
+                foreach (MyEntity entity in entities)
                 {
-                    if (sphere.Contains(entity.PositionComp.WorldVolume) == ContainmentType.Contains)
+                    if (sphere.Contains(entity.Center()) == ContainmentType.Contains)
                         item.ContainsEntities.Add(entity.EntityId);
                 }
             }
