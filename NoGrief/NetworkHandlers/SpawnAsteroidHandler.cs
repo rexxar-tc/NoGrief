@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Reflection;
 using System.Timers;
 using NoGriefPlugin.Utility;
 using Sandbox.Engine.Multiplayer;
+using Sandbox.Game.Entities;
 using SEModAPIInternal.API.Common;
 using SEModAPIInternal.API.Server;
 using VRage.Game;
 using VRage.Library.Collections;
 using VRage.Network;
-using VRageMath;
 
 namespace NoGriefPlugin.NetworkHandlers
 {
@@ -80,6 +76,11 @@ namespace NoGriefPlugin.NetworkHandlers
                 _kickTimer.AutoReset = false;
                 _kickTimer.Start();
             }
+
+            //send the fail message to make the client play the paste fail sound
+            //just because we can
+            var inf = typeof(MyCubeBuilder).GetMethod("SpawnGridReply", BindingFlags.NonPublic | BindingFlags.Static);
+            ServerNetworkManager.Instance.RaiseStaticEvent(inf, remoteUserId, false);
 
             return true;
         }

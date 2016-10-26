@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Reflection;
 using System.Timers;
 using NoGriefPlugin.Utility;
 using Sandbox.Game.Entities;
@@ -101,6 +102,12 @@ namespace NoGriefPlugin.NetworkHandlers
 
                 NoGrief.Log.Info($"Intercepted block remove request from {PlayerMap.Instance.GetFastPlayerNameFromSteamId(remoteUserId)} for grid {grid.DisplayName ?? "ID"}:{grid.EntityId}");
                 Communication.SendPrivateInformation(remoteUserId, "You cannot remove blocks in this protected area!");
+
+                //send the fail message to make the client play the paste fail sound
+                //just because we can
+                var inf = typeof(MyCubeBuilder).GetMethod("SpawnGridReply", BindingFlags.NonPublic | BindingFlags.Static);
+                ServerNetworkManager.Instance.RaiseStaticEvent(inf, remoteUserId, false);
+
                 return true;
             }
             return false;

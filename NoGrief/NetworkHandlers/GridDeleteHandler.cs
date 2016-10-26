@@ -1,4 +1,5 @@
-﻿using System.Timers;
+﻿using System.Reflection;
+using System.Timers;
 using NoGriefPlugin.Utility;
 using Sandbox.Game.Entities;
 using SEModAPIInternal.API.Common;
@@ -69,6 +70,12 @@ namespace NoGriefPlugin.NetworkHandlers
 
                 NoGrief.Log.Info($"Intercepted grid delete request from {PlayerMap.Instance.GetFastPlayerNameFromSteamId(remoteUserId)} for grid {grid.DisplayName ?? "ID"}:{grid.EntityId}");
                 Communication.SendPrivateInformation(remoteUserId, "You cannot delete grids in this protected area!");
+
+                //send the fail message to make the client play the paste fail sound
+                //just because we can
+                var inf = typeof(MyCubeBuilder).GetMethod("SpawnGridReply", BindingFlags.NonPublic | BindingFlags.Static);
+                ServerNetworkManager.Instance.RaiseStaticEvent(inf, remoteUserId, false);
+
                 return true;
             }
 

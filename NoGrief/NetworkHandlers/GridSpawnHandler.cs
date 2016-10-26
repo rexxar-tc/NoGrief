@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Timers;
 using NoGriefPlugin.Utility;
 using Sandbox.Game.Entities;
@@ -89,6 +88,12 @@ namespace NoGriefPlugin.NetworkHandlers
 
             NoGrief.Log.Info($"Intercepted grid spawn request from {PlayerMap.Instance.GetFastPlayerNameFromSteamId(remoteUserId)}");
             Communication.SendPrivateInformation(remoteUserId, "You cannot build blocks in this protected area!");
+
+            //send the fail message to make the client play the paste fail sound
+            //just because we can
+            var inf = typeof(MyCubeBuilder).GetMethod("SpawnGridReply", BindingFlags.NonPublic | BindingFlags.Static);
+            ServerNetworkManager.Instance.RaiseStaticEvent(inf, remoteUserId, false);
+
             return true;
         }
 
