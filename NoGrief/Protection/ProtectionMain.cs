@@ -55,11 +55,26 @@ namespace NoGriefPlugin.Protection
                 NoGrief.Log.Info("Init ProjectionHandler");
             }
 
-            ServerNetworkManager.Instance.RegisterNetworkHandlers(new SpawnPlanetHandler());
-            NoGrief.Log.Info("Init planet");
+            if (PluginSettings.Instance.StopPlanetPaste && !_initFlags.HasFlag(InitFlags.PlanetPaste))
+            {
+                _initFlags |= InitFlags.PlanetPaste;
+                ServerNetworkManager.Instance.RegisterNetworkHandlers(new SpawnPlanetHandler());
+                NoGrief.Log.Info("Init Planet");
+            }
 
-            ServerNetworkManager.Instance.RegisterNetworkHandlers(new SpawnAsteroidHandler());
-            NoGrief.Log.Info("Init asteroid");
+            if(PluginSettings.Instance.StopAsteroidPaste && !_initFlags.HasFlag(InitFlags.AsteroidPaste))
+            {
+                _initFlags |= InitFlags.AsteroidPaste;
+                ServerNetworkManager.Instance.RegisterNetworkHandlers(new SpawnAsteroidHandler());
+                NoGrief.Log.Info("Init Asteroid");
+            }
+
+            if (PluginSettings.Instance.StopVoxelHands && !_initFlags.HasFlag(InitFlags.VoxelHand))
+            {
+                _initFlags |= InitFlags.VoxelHand;
+                ServerNetworkManager.Instance.RegisterNetworkHandlers(new VoxelOperationHandler());
+                NoGrief.Log.Info("Init VoxelOperation");
+            }
         }
 
         [Flags]
@@ -73,6 +88,7 @@ namespace NoGriefPlugin.Protection
             ProjectionLimit = 1 << 5,
             PlanetPaste = 1 << 6,
             AsteroidPaste = 1 << 7,
+            VoxelHand = 1 << 8,
         }
     }
 }
