@@ -60,6 +60,7 @@ namespace NoGriefPlugin
         private bool _voxelPasteSpaceMaster;
         private bool _voxelPasteKick;
         private bool _voxlePasteBan;
+        private bool _stopVoxelHands;
 
         #endregion
 
@@ -297,6 +298,18 @@ namespace NoGriefPlugin
                 Save();
             }
         }
+
+        public bool StopVoxelHands
+        {
+            get { return _stopVoxelHands; }
+            set
+            {
+                _stopVoxelHands = value;
+                Save();
+                ProtectionMain.Instance.Init();
+            }
+        }
+
         #endregion
 
         #region Loading and Saving

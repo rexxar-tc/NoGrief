@@ -85,6 +85,7 @@
     <Compile Include="NetworkHandlers\RemoveBlockHandler.cs" />
     <Compile Include="NetworkHandlers\SpawnAsteroidHandler.cs" />
     <Compile Include="NetworkHandlers\SpawnPlanetHandler.cs" />
+    <Compile Include="NetworkHandlers\VoxelOperationHandler.cs" />
     <Compile Include="NoGrief.cs" />
     <Compile Include="ProcessHandlers\ProcessExclusionZone.cs" />
     <Compile Include="ProcessHandlers\ProcessProtectionZone.cs" />

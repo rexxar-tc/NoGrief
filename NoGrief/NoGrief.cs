@@ -341,6 +341,13 @@ namespace NoGriefPlugin
             get { return PluginSettings.Instance.VoxelPasteBan; }
             set { PluginSettings.Instance.VoxelPasteBan = value; }
         }
+
+        [Category("Voxel Paste")]
+        public bool StopVoxelHands
+        {
+            get { return PluginSettings.Instance.StopVoxelHands; }
+            set { PluginSettings.Instance.StopVoxelHands = value; }
+        }
         #endregion
 
         #region IPlugin Members
